@@ -4,6 +4,7 @@ import lk.helphub.api.application.AuthService;
 import lk.helphub.api.application.dto.AuthResponse;
 import lk.helphub.api.application.dto.LoginRequest;
 import lk.helphub.api.application.dto.RegisterRequest;
+import lk.helphub.api.presentation.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,16 +20,28 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
+    public ResponseEntity<ApiResponse<AuthResponse>> register(
             @RequestBody RegisterRequest request
     ) {
-        return ResponseEntity.ok(authService.register(request));
+        AuthResponse response = authService.register(request);
+        return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
+                .status(true)
+                .statusCode(lk.helphub.api.domain.enums.ResponseStatusCode.SUCCESS)
+                .message("User registered successfully")
+                .data(response)
+                .build());
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
             @RequestBody LoginRequest request
     ) {
-        return ResponseEntity.ok(authService.login(request));
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
+                .status(true)
+                .statusCode(lk.helphub.api.domain.enums.ResponseStatusCode.SUCCESS)
+                .message("User logged in successfully")
+                .data(response)
+                .build());
     }
 }
