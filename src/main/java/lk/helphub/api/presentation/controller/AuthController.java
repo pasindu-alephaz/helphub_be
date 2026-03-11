@@ -25,10 +25,10 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(request));
     }
 
-    @PostMapping("/authenticate")
-    public ResponseEntity<AuthResponse> authenticate(
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(
             @RequestBody LoginRequest request
     ) {
-        return ResponseEntity.ok(authService.authenticate(request));
+        return ResponseEntity.ok(authService.login(request));
     }
 }

@@ -54,7 +54,7 @@ public class AuthService {
         return AuthResponse.builder().token(jwtToken).build();
     }
 
-    public AuthResponse authenticate(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),

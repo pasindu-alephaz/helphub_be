@@ -30,5 +30,5 @@ The initial module focuses on robust user management and authentication. The dat
 - [x] Defined initial database schema (Authentication Module).
 - [x] Implement the database schema using Liquibase.
 - [ ] Build the domain and infrastructure layers for the Authentication Module.
-- [ ] Develop the Registration and Login REST APIs.
+- [ ] Develop the Registration and Login REST APIs (`/register`, `/login`).
 - [ ] Integrate advanced authorization (RBAC) checks within the application.
