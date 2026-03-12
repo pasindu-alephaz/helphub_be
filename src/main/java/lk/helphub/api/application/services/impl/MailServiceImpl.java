@@ -1,6 +1,6 @@
-package lk.helphub.api.infrastructure.mail;
+package lk.helphub.api.application.services.impl;
 
-import lk.helphub.api.application.MailService;
+import lk.helphub.api.application.services.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

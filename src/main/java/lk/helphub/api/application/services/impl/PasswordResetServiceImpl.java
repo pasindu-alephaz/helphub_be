@@ -1,6 +1,6 @@
-package lk.helphub.api.application.impl;
+package lk.helphub.api.application.services.impl;
 
-import lk.helphub.api.application.PasswordResetService;
+import lk.helphub.api.application.services.PasswordResetService;
 import lk.helphub.api.application.dto.ForgotPasswordRequest;
 import lk.helphub.api.application.dto.ResetPasswordRequest;
 import lk.helphub.api.domain.entity.PasswordReset;
@@ -25,7 +25,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private final UserRepository userRepository;
     private final PasswordResetRepository passwordResetRepository;
     private final PasswordEncoder passwordEncoder;
-    private final lk.helphub.api.application.MailService mailService;
+    private final lk.helphub.api.application.services.MailService mailService;
+
 
     @Override
     @Transactional
