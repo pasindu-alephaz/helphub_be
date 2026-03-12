@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS "images" (
 CREATE TABLE IF NOT EXISTS "password_resets" (
 	"id" UUID DEFAULT gen_random_uuid(),
 	"user_id" UUID NOT NULL,
-	"token" VARCHAR(255) NOT NULL,
+	"otp" VARCHAR(255) NOT NULL,
 	"expires_at" TIMESTAMP NOT NULL,
 	"used_at" TIMESTAMP,
 	"created_at" TIMESTAMP DEFAULT now(),
@@ -103,3 +103,5 @@ CREATE TABLE IF NOT EXISTS "verification_documents" (
 	CONSTRAINT fk_vd_user FOREIGN KEY("user_id") REFERENCES "users"("id"),
 	CONSTRAINT fk_vd_image FOREIGN KEY("image_id") REFERENCES "images"("id")
 );
+
+
