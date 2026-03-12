@@ -3,12 +3,16 @@ package lk.helphub.api.application;
 import lk.helphub.api.application.dto.AuthResponse;
 import lk.helphub.api.application.dto.LoginRequest;
 import lk.helphub.api.application.dto.RegisterRequest;
+import lk.helphub.api.application.dto.VerifyOtpRequest;
+import lk.helphub.api.domain.entity.LoginOtp;
 import lk.helphub.api.domain.entity.Role;
 import lk.helphub.api.domain.entity.User;
+import lk.helphub.api.domain.repository.LoginOtpRepository;
 import lk.helphub.api.domain.repository.RoleRepository;
 import lk.helphub.api.domain.repository.UserRepository;
 import lk.helphub.api.infrastructure.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,10 +21,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -29,6 +36,8 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private final LoginOtpRepository loginOtpRepository;
+    private final MailService mailService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -56,7 +65,7 @@ public class AuthService {
         return AuthResponse.builder().token(jwtToken).build();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -65,7 +74,61 @@ public class AuthService {
                 )
         );
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // If 2FA is enabled, send OTP and return challenge instead of JWT
+        if (user.is2faEnabled()) {
+            // Invalidate any previous unused OTPs
+            List<LoginOtp> previous = loginOtpRepository.findByUserAndUsedAtIsNull(user);
+            for (LoginOtp otp : previous) {
+                otp.setUsedAt(LocalDateTime.now());
+                loginOtpRepository.save(otp);
+            }
+
+            String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+            LoginOtp loginOtp = LoginOtp.builder()
+                    .user(user)
+                    .otp(otp)
+                    .expiresAt(LocalDateTime.now().plusMinutes(10))
+                    .build();
+            loginOtpRepository.save(loginOtp);
+
+            mailService.sendMail(
+                    user.getEmail(),
+                    "Your HelpHub Login OTP",
+                    "Your one-time login verification code is: " + otp + "\nThis code expires in 10 minutes."
+            );
+
+            log.info("2FA OTP sent to {}", user.getEmail());
+            return AuthResponse.builder().twoFactorRequired(true).build();
+        }
+
+        // 2FA not enabled — return JWT immediately
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        var jwtToken = jwtUtil.generateToken(userDetails);
+        return AuthResponse.builder().token(jwtToken).build();
+    }
+
+    @Transactional
+    public AuthResponse verify2fa(VerifyOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        LoginOtp loginOtp = loginOtpRepository.findByOtpAndUser(request.getOtp(), user)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid OTP"));
+
+        if (loginOtp.getUsedAt() != null) {
+            throw new IllegalArgumentException("OTP has already been used");
+        }
+        if (loginOtp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("OTP has expired");
+        }
+
+        loginOtp.setUsedAt(LocalDateTime.now());
+        loginOtpRepository.save(loginOtp);
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         var jwtToken = jwtUtil.generateToken(userDetails);
         return AuthResponse.builder().token(jwtToken).build();
     }
