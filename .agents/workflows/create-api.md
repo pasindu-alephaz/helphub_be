@@ -77,10 +77,10 @@ public class ResourceNotFoundException extends RuntimeException {
 
 ```java
 public interface ExampleService {
-    ExampleResponseDto create(ExampleRequestDto dto);
-    ExampleResponseDto getById(Long id);
-    List<ExampleResponseDto> getAll();
-    ExampleResponseDto update(Long id, ExampleRequestDto dto);
+    Example create(Example dto);
+    Example getById(Long id);
+    List<Example> getAll();
+    Example update(Long id, Example dto);
     void delete(Long id);
 }
 ```
@@ -93,50 +93,39 @@ public class ExampleServiceImpl implements ExampleService {
     private final ExampleRepository exampleRepository;
 
     @Override
-    public ExampleResponseDto create(ExampleRequestDto dto) {
-        Example entity = new Example();
-        entity.setName(dto.getName());
-        return mapToDto(exampleRepository.save(entity));
+    public Example create(Example dto) {
+        return exampleRepository.save(dto);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ExampleResponseDto getById(Long id) {
-        return mapToDto(exampleRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Not found: " + id)));
+    public Example getById(Long id) {
+        return exampleRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Not found: " + id));
     }
 
     // getAll(), update(), delete() follow the same pattern
-
-    private ExampleResponseDto mapToDto(Example e) { /* map fields */ }
 }
 ```
 
 ---
 
-## 5. Presentation Layer — DTOs
+## 5. Presentation Layer — ApiResponse
 
-**Path:** `presentation/dtos/{entity}/`
+**Path:** `presentation/dto/ApiResponse.java`
 
-- Separate **request** and **response** DTOs in a sub-package
-- Lombok: `@Getter`, `@Setter`, `@NoArgsConstructor`, `@AllArgsConstructor`
-- Jakarta Validation on **request** DTO only
-- **Never** expose JPA entities directly
+- We use a generic `ApiResponse<T>` wrapper for all responses.
+- You generally do **not** need to create specific Request or Response DTOs unless the payload differs significantly from the Entity. Instead, pass the Entity class in the `@RequestBody` and return it wrapped in the `ApiResponse`.
 
 ```java
-// Request DTO
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
-public class ExampleRequestDto {
-    @NotBlank(message = "Name is required")
-    @Size(max = 255)
-    private String name;
-}
-
-// Response DTO
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
-public class ExampleResponseDto {
-    private Long id;
-    private String name;
+// Our generic ApiResponse wrapper looks roughly like this (already exists in the project):
+@Getter @Setter @Builder
+public class ApiResponse<T> {
+    private boolean status;
+    private String statusCode;
+    private String message;
+    private List<String> errors;
+    private T data;
 }
 ```
 
@@ -161,23 +150,43 @@ public class ExampleController {
     private final ExampleService exampleService;
 
     @PostMapping
-    public ResponseEntity<ExampleResponseDto> create(@Valid @RequestBody ExampleRequestDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(exampleService.create(dto));
+    public ResponseEntity<ApiResponse<Example>> create(@Valid @RequestBody Example dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.<Example>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Example created successfully")
+                .data(exampleService.create(dto))
+                .build());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ExampleResponseDto> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(exampleService.getById(id));
+    public ResponseEntity<ApiResponse<Example>> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.<Example>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Example retrieved successfully")
+                .data(exampleService.getById(id))
+                .build());
     }
 
     @GetMapping
-    public ResponseEntity<List<ExampleResponseDto>> getAll() {
-        return ResponseEntity.ok(exampleService.getAll());
+    public ResponseEntity<ApiResponse<List<Example>>> getAll() {
+        return ResponseEntity.ok(ApiResponse.<List<Example>>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Examples retrieved successfully")
+                .data(exampleService.getAll())
+                .build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExampleResponseDto> update(@PathVariable Long id, @Valid @RequestBody ExampleRequestDto dto) {
-        return ResponseEntity.ok(exampleService.update(id, dto));
+    public ResponseEntity<ApiResponse<Example>> update(@PathVariable Long id, @Valid @RequestBody Example dto) {
+        return ResponseEntity.ok(ApiResponse.<Example>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Example updated successfully")
+                .data(exampleService.update(id, dto))
+                .build());
     }
 
     @DeleteMapping("/{id}")
@@ -238,7 +247,7 @@ Follow the `/swagger-setup` workflow to add OpenAPI annotations to your controll
 - [ ] `domain/repositories/{Entity}Repository.java`
 - [ ] `application/exceptions/` — custom exceptions
 - [ ] `application/services/{Entity}Service.java` + `ServiceImpl`
-- [ ] `presentation/dtos/{entity}/` — request & response DTOs
+- [ ] `presentation/dto/ApiResponse.java` — ensure it exists
 - [ ] `presentation/controllers/{Entity}Controller.java`
 - [ ] `application/exceptions/GlobalExceptionHandler.java` — if missing
 - [ ] `infrastructure/security/SecurityConfig.java` — if public

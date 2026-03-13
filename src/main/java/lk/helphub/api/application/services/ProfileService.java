@@ -1,4 +1,4 @@
-package lk.helphub.api.application;
+package lk.helphub.api.application.services;
 
 import lk.helphub.api.application.dto.ProfileResponse;
 import lk.helphub.api.application.dto.UpdateProfileRequest;

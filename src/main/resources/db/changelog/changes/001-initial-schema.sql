@@ -119,3 +119,21 @@ CREATE TABLE IF NOT EXISTS "login_otps" (
 	PRIMARY KEY("id"),
 	CONSTRAINT fk_login_otp_user FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE
 );
+-- changeset antigravity:9
+CREATE TABLE IF NOT EXISTS "verification_otps" (
+	"id" UUID DEFAULT gen_random_uuid(),
+	"token" VARCHAR(64) NOT NULL UNIQUE,
+	"otp" VARCHAR(6) NOT NULL,
+	"type" VARCHAR(10) NOT NULL,
+	"target" VARCHAR(255) NOT NULL,
+	"expires_at" TIMESTAMP NOT NULL,
+	"used_at" TIMESTAMP,
+	"created_at" TIMESTAMP DEFAULT now(),
+	"updated_at" TIMESTAMP DEFAULT now(),
+	"deleted_at" TIMESTAMP DEFAULT NULL,
+	PRIMARY KEY("id")
+);
+
+-- changeset antigravity:10
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "email_verified_at" TIMESTAMP DEFAULT NULL;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "phone_verified_at" TIMESTAMP DEFAULT NULL;

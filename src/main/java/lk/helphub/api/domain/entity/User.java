@@ -50,6 +50,12 @@ public class User {
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
 
+    @Column(name = "email_verified_at")
+    private LocalDateTime emailVerifiedAt;
+
+    @Column(name = "phone_verified_at")
+    private LocalDateTime phoneVerifiedAt;
+
     @Column(length = 20)
     private String status = "active";
 

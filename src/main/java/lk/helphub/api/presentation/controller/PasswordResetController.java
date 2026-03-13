@@ -1,7 +1,7 @@
 package lk.helphub.api.presentation.controller;
 
 import jakarta.validation.Valid;
-import lk.helphub.api.application.PasswordResetService;
+import lk.helphub.api.application.services.PasswordResetService;
 import lk.helphub.api.application.dto.ForgotPasswordRequest;
 import lk.helphub.api.application.dto.ResetPasswordRequest;
 import lk.helphub.api.domain.enums.ResponseStatusCode;
