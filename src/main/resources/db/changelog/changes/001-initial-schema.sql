@@ -104,6 +104,21 @@ CREATE TABLE IF NOT EXISTS "verification_documents" (
 	CONSTRAINT fk_vd_image FOREIGN KEY("image_id") REFERENCES "images"("id")
 );
 
+
+-- changeset antigravity:9
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_2fa_enabled" BOOLEAN DEFAULT false;
+
+-- changeset antigravity:10
+CREATE TABLE IF NOT EXISTS "login_otps" (
+	"id" UUID DEFAULT gen_random_uuid(),
+	"user_id" UUID NOT NULL,
+	"otp" VARCHAR(6) NOT NULL,
+	"expires_at" TIMESTAMP NOT NULL,
+	"used_at" TIMESTAMP,
+	"created_at" TIMESTAMP DEFAULT now(),
+	PRIMARY KEY("id"),
+	CONSTRAINT fk_login_otp_user FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE
+);
 -- changeset antigravity:9
 CREATE TABLE IF NOT EXISTS "verification_otps" (
 	"id" UUID DEFAULT gen_random_uuid(),

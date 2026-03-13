@@ -59,6 +59,9 @@ public class User {
     @Column(length = 20)
     private String status = "active";
 
+    @Column(name = "is_2fa_enabled")
+    private boolean is2faEnabled = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

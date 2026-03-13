@@ -15,4 +15,5 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class AuthResponse {
     @Schema(description = "JWT authentication token", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     private String token;
+    private boolean twoFactorRequired;
 }
