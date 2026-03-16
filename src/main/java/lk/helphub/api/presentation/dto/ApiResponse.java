@@ -31,7 +31,7 @@ public class ApiResponse<T> {
     @Schema(description = "Human-readable message providing more details about the outcome", example = "Operation completed successfully")
     private String message;
 
-    @Schema(description = "Map of field/property names to arrays of error messages, populated during validation failures")
+    @Schema(description = "Map of field/property names to arrays of error messages, populated during validation failures", hidden = true)
     private Map<String, List<String>> errors;
 
     @Schema(description = "The payload/data returned by the endpoint, shape depends on the exact endpoint")

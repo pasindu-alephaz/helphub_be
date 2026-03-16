@@ -2,6 +2,9 @@ package lk.helphub.api.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lk.helphub.api.application.services.PermissionService;
@@ -26,7 +29,9 @@ public class PermissionController {
     @Operation(summary = "Get permission by ID", description = "Retrieves a single permission by its ID")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Permission found"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Permission not found")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Permission not found",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                    examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Permission not found\"\n}")))
     })
     public ResponseEntity<ApiResponse<Permission>> getById(
             @Parameter(description = "ID of the permission to retrieve")

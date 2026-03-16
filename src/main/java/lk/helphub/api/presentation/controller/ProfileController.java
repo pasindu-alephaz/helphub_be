@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lk.helphub.api.presentation.dto.ApiResponse;
@@ -29,8 +32,12 @@ public class ProfileController {
     @Operation(summary = "Get user profile", description = "Retrieves the profile information of the currently authenticated user")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT token required"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT token required",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"UNAUTHORIZED\",\n  \"message\": \"Full authentication is required to access this resource\"\n}"))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Profile not found\"\n}")))
     })
     public ResponseEntity<ApiResponse<ProfileResponse>> getProfile(Principal principal) {
         ProfileResponse profile = profileService.getProfile(principal.getName());
@@ -47,9 +54,15 @@ public class ProfileController {
     @Operation(summary = "Update user profile", description = "Updates the profile information of the currently authenticated user")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Profile updated successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body or validation errors"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT token required"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body or validation errors",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"VALIDATION_ERROR\",\n  \"message\": \"Validation failed\",\n  \"errors\": {\n    \"name\": [\"must not be blank\"]\n  }\n}"))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT token required",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"UNAUTHORIZED\",\n  \"message\": \"Full authentication is required to access this resource\"\n}"))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Profile not found\"\n}")))
     })
     public ResponseEntity<ApiResponse<ProfileResponse>> updateProfile(
             Principal principal,

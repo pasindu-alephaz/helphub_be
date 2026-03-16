@@ -2,6 +2,9 @@ package lk.helphub.api.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,7 +32,9 @@ public class RoleController {
     @Operation(summary = "Create a new role", description = "Creates a new role resource")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Role created successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body or existing role")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body or existing role",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                    examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"VALIDATION_ERROR\",\n  \"message\": \"Validation failed or role already exists\"\n}")))
     })
     public ResponseEntity<ApiResponse<Role>> create(@Valid @RequestBody Role dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.<Role>builder()
@@ -44,7 +49,9 @@ public class RoleController {
     @Operation(summary = "Get role by ID", description = "Retrieves a single role by its ID")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Role found"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role not found")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role not found",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                    examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Role not found\"\n}")))
     })
     public ResponseEntity<ApiResponse<Role>> getById(
             @Parameter(description = "ID of the role to retrieve")
@@ -73,8 +80,12 @@ public class RoleController {
     @Operation(summary = "Update a role", description = "Updates an existing role by its ID")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Role updated successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role not found"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body or existing role")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role not found",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                    examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Role not found\"\n}"))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body or existing role",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                    examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"VALIDATION_ERROR\",\n  \"message\": \"Validation failed or role already exists\"\n}")))
     })
     public ResponseEntity<ApiResponse<Role>> update(
             @Parameter(description = "ID of the role to update")
@@ -92,7 +103,9 @@ public class RoleController {
     @Operation(summary = "Delete a role", description = "Deletes a role by its ID")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Role deleted successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role not found")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role not found",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                    examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Role not found\"\n}")))
     })
     public ResponseEntity<Void> delete(
             @Parameter(description = "ID of the role to delete")
@@ -105,8 +118,12 @@ public class RoleController {
     @Operation(summary = "Assign permissions to a role", description = "Replaces the permissions assigned to an existing role")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Permissions assigned successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role or permission not found"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role or permission not found",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                    examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Role or permission not found\"\n}"))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                    examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"VALIDATION_ERROR\",\n  \"message\": \"Invalid request body\"\n}")))
     })
     public ResponseEntity<ApiResponse<Role>> assignPermissions(
             @Parameter(description = "ID of the role to update")
