@@ -1,0 +1,89 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< lk.helphub:api >---------------------------
+[INFO] Building api 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ api ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ api ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 71 source files with javac [debug parameters release 21] to target\classes
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/domain/entity/User.java:[48,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/domain/entity/User.java:[60,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/domain/entity/User.java:[63,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[INFO] 3 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/application/services/CategoryService.java:[3,38] cannot find symbol
+  symbol:   class CategoryRequest
+  location: package lk.helphub.api.application.dto
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/application/services/CategoryService.java:[10,37] cannot find symbol
+  symbol:   class CategoryCreateRequest
+  location: interface lk.helphub.api.application.services.CategoryService
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/application/services/CategoryService.java:[11,40] cannot find symbol
+  symbol:   class SubcategoryCreateRequest
+  location: interface lk.helphub.api.application.services.CategoryService
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/application/services/CategoryService.java:[14,46] cannot find symbol
+  symbol:   class BaseCategoryRequest
+  location: interface lk.helphub.api.application.services.CategoryService
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/presentation/controller/CategoryController.java:[7,38] cannot find symbol
+  symbol:   class CategoryRequest
+  location: package lk.helphub.api.application.dto
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/presentation/controller/CategoryController.java:[32,93] cannot find symbol
+  symbol:   class CategoryCreateRequest
+  location: class lk.helphub.api.presentation.controller.CategoryController
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/presentation/controller/CategoryController.java:[48,96] cannot find symbol
+  symbol:   class SubcategoryCreateRequest
+  location: class lk.helphub.api.presentation.controller.CategoryController
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/presentation/controller/CategoryController.java:[96,33] cannot find symbol
+  symbol:   class CategoryRequest
+  location: class lk.helphub.api.presentation.controller.CategoryController
+[INFO] 8 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10.746 s
+[INFO] Finished at: 2026-03-16T14:46:04+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project api: Compilation failure: Compilation failure: 
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/application/services/CategoryService.java:[3,38] cannot find symbol
+[ERROR]   symbol:   class CategoryRequest
+[ERROR]   location: package lk.helphub.api.application.dto
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/application/services/CategoryService.java:[10,37] cannot find symbol
+[ERROR]   symbol:   class CategoryCreateRequest
+[ERROR]   location: interface lk.helphub.api.application.services.CategoryService
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/application/services/CategoryService.java:[11,40] cannot find symbol
+[ERROR]   symbol:   class SubcategoryCreateRequest
+[ERROR]   location: interface lk.helphub.api.application.services.CategoryService
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/application/services/CategoryService.java:[14,46] cannot find symbol
+[ERROR]   symbol:   class BaseCategoryRequest
+[ERROR]   location: interface lk.helphub.api.application.services.CategoryService
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/presentation/controller/CategoryController.java:[7,38] cannot find symbol
+[ERROR]   symbol:   class CategoryRequest
+[ERROR]   location: package lk.helphub.api.application.dto
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/presentation/controller/CategoryController.java:[32,93] cannot find symbol
+[ERROR]   symbol:   class CategoryCreateRequest
+[ERROR]   location: class lk.helphub.api.presentation.controller.CategoryController
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/presentation/controller/CategoryController.java:[48,96] cannot find symbol
+[ERROR]   symbol:   class SubcategoryCreateRequest
+[ERROR]   location: class lk.helphub.api.presentation.controller.CategoryController
+[ERROR] /C:/Users/My PC/Documents/Projects/helphub_be/src/main/java/lk/helphub/api/presentation/controller/CategoryController.java:[96,33] cannot find symbol
+[ERROR]   symbol:   class CategoryRequest
+[ERROR]   location: class lk.helphub.api.presentation.controller.CategoryController
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
