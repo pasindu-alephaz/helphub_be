@@ -88,6 +88,19 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public CategoryResponse getSubcategoryById(UUID categoryId, UUID subCategoryId) {
+        ServiceCategory subcategory = categoryRepository.findById(subCategoryId)
+                .filter(c -> c.getDeletedAt() == null && c.getParent() != null)
+                .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
+
+        if (!subcategory.getParent().getId().equals(categoryId)) {
+            throw new IllegalArgumentException("Subcategory does not belong to the specified category");
+        }
+
+        return mapToResponse(subcategory);
+    }
+
+    @Override
     @Transactional
     public CategoryResponse updateCategory(UUID id, CategoryUpdateRequest request) {
         ServiceCategory category = categoryRepository.findById(id)
@@ -101,10 +114,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryResponse updateSubcategory(UUID id, SubcategoryUpdateRequest request) {
-        ServiceCategory subcategory = categoryRepository.findById(id)
+    public CategoryResponse updateSubcategory(UUID categoryId, UUID subCategoryId, SubcategoryUpdateRequest request) {
+        ServiceCategory subcategory = categoryRepository.findById(subCategoryId)
                 .filter(c -> c.getDeletedAt() == null && c.getParent() != null)
                 .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
+
+        if (!subcategory.getParent().getId().equals(categoryId)) {
+            throw new IllegalArgumentException("Subcategory does not belong to the specified category");
+        }
 
         updateBaseFields(subcategory, request);
 
@@ -131,10 +148,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public void deleteSubcategory(UUID id) {
-        ServiceCategory subcategory = categoryRepository.findById(id)
+    public void deleteSubcategory(UUID categoryId, UUID subCategoryId) {
+        ServiceCategory subcategory = categoryRepository.findById(subCategoryId)
                 .filter(c -> c.getDeletedAt() == null && c.getParent() != null)
                 .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
+
+        if (!subcategory.getParent().getId().equals(categoryId)) {
+            throw new IllegalArgumentException("Subcategory does not belong to the specified category");
+        }
         
         subcategory.setDeletedAt(LocalDateTime.now());
         categoryRepository.save(subcategory);

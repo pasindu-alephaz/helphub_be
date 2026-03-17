@@ -55,14 +55,17 @@ public class CategoryController {
                 .build());
     }
 
-    @GetMapping("/subcategories/{id}")
+    @GetMapping("/categories/{categoryId}/subcategories/{subCategoryId}")
     @Operation(summary = "Get subcategory details", description = "Retrieves details of a specific subcategory by ID")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Subcategory retrieved successfully"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Subcategory not found")
     })
-    public ResponseEntity<ApiResponse<CategoryResponse>> getSubcategoryById(@PathVariable UUID id) {
-        CategoryResponse subcategory = categoryService.getCategoryById(id);
+    public ResponseEntity<ApiResponse<CategoryResponse>> getSubcategoryById(
+            @PathVariable UUID categoryId,
+            @PathVariable UUID subCategoryId
+    ) {
+        CategoryResponse subcategory = categoryService.getSubcategoryById(categoryId, subCategoryId);
         return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
@@ -87,13 +90,17 @@ public class CategoryController {
                 .build());
     }
 
-    @PostMapping("/subcategories/request")
+    @PostMapping("/categories/{categoryId}/subcategories/request")
     @Operation(summary = "Request new subcategory", description = "Allows users to suggest a new subcategory for an existing category")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Request submitted successfully"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    public ResponseEntity<ApiResponse<CategoryResponse>> requestSubcategory(@Valid @RequestBody SubcategoryCreateRequest request) {
+    public ResponseEntity<ApiResponse<CategoryResponse>> requestSubcategory(
+            @PathVariable UUID categoryId,
+            @Valid @RequestBody SubcategoryCreateRequest request
+    ) {
+        request.setParentId(categoryId);
         CategoryResponse response = categoryService.requestSubcategory(request);
         return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
