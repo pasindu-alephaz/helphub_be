@@ -1,6 +1,9 @@
 package lk.helphub.api.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,7 +32,9 @@ public class VerificationController {
     @Operation(summary = "Send verification OTP", description = "Sends a verification OTP to the provided email and/or phone number. Returns token(s) to use when verifying.")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Verification OTP sent successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request — at least one of email or phone number is required")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request — at least one of email or phone number is required",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"VALIDATION_ERROR\",\n  \"message\": \"Validation failed or invalid input\"\n}")))
     })
     public ResponseEntity<ApiResponse<SendVerificationResponse>> sendVerificationOtp(
             @RequestBody SendVerificationRequest request
@@ -47,7 +52,9 @@ public class VerificationController {
     @Operation(summary = "Verify OTP", description = "Verifies an OTP code using the token received from the send endpoint")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Verification successful"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid, expired, or already used OTP")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid, expired, or already used OTP",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"BAD_REQUEST\",\n  \"message\": \"Invalid or expired OTP\"\n}")))
     })
     public ResponseEntity<ApiResponse<Void>> verifyOtp(
             @Valid @RequestBody VerifyOtpRequest request

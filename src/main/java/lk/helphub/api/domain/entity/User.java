@@ -59,6 +59,15 @@ public class User {
     @Column(length = 20)
     private String status = "active";
 
+    @Column(name = "google_id", length = 255)
+    private String googleId;
+
+    @Column(name = "apple_id", length = 255)
+    private String appleId;
+
+    @Column(name = "profile_image_url", columnDefinition = "TEXT")
+    private String profileImageUrl;
+
     @Column(name = "is_2fa_enabled")
     private boolean is2faEnabled = false;
 
