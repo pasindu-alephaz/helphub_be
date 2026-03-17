@@ -150,3 +150,20 @@ INSERT INTO role_permissions (role_id, permission_id)
   SELECT r.id, p.id FROM roles r, permissions p
   WHERE r.name = 'ADMIN' AND p.slug = 'admin-access'
   ON CONFLICT DO NOTHING;
+
+-- changeset antigravity:15
+INSERT INTO users (email, password_hash, first_name, last_name, user_type, status, is_2fa_enabled)
+VALUES (
+    'admin@helphub.lk',
+    '$2y$12$ttDHEl3vqsZGPzjlBEw2.uBlRwLJU7OFrlpEmVn.4kJR8z05qsE2.',
+    'System',
+    'Admin',
+    'admin',
+    'active',
+    false
+) ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u, roles r 
+WHERE u.email = 'admin@helphub.lk' AND r.name = 'ADMIN'
+ON CONFLICT DO NOTHING;
