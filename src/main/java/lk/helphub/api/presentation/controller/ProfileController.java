@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lk.helphub.api.presentation.dto.ApiResponse;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/profile")
@@ -39,6 +40,7 @@ public class ProfileController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
                 examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Profile not found\"\n}")))
     })
+    @PreAuthorize("hasAuthority('profile_read')")
     public ResponseEntity<ApiResponse<ProfileResponse>> getProfile(Principal principal) {
         ProfileResponse profile = profileService.getProfile(principal.getName());
         
@@ -64,6 +66,7 @@ public class ProfileController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
                 examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Profile not found\"\n}")))
     })
+    @PreAuthorize("hasAuthority('profile_update')")
     public ResponseEntity<ApiResponse<ProfileResponse>> updateProfile(
             Principal principal,
             @Valid @RequestBody UpdateProfileRequest request

@@ -13,6 +13,7 @@ import lk.helphub.api.domain.enums.ResponseStatusCode;
 import lk.helphub.api.presentation.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,6 +34,7 @@ public class PermissionController {
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
                     examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Permission not found\"\n}")))
     })
+    @PreAuthorize("hasAuthority('permission_read')")
     public ResponseEntity<ApiResponse<Permission>> getById(
             @Parameter(description = "ID of the permission to retrieve")
             @PathVariable Integer id) {
@@ -47,6 +49,7 @@ public class PermissionController {
     @GetMapping
     @Operation(summary = "Get all permissions", description = "Retrieves a list of all permissions")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "List of permissions retrieved")
+    @PreAuthorize("hasAuthority('permission_read')")
     public ResponseEntity<ApiResponse<List<Permission>>> getAll() {
         return ResponseEntity.ok(ApiResponse.<List<Permission>>builder()
                 .status(true)
