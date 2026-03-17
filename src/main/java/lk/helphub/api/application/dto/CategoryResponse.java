@@ -1,5 +1,6 @@
 package lk.helphub.api.application.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import java.util.Map;
 import java.util.UUID;
@@ -17,7 +18,10 @@ public class CategoryResponse {
     private Map<String, String> description;
     private String status;
     private Integer displayOrder;
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private UUID parentId;
+    
     private UUID iconId;
     private String iconUrl;
     private List<CategoryResponse> subcategories;

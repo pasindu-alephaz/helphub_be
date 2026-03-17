@@ -8,6 +8,7 @@ import lk.helphub.api.domain.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lk.helphub.api.domain.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -48,7 +49,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         ServiceCategory parent = categoryRepository.findById(request.getParentId())
                 .filter(c -> c.getDeletedAt() == null)
-                .orElseThrow(() -> new IllegalArgumentException("Parent category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Parent category not found"));
 
         ServiceCategory subcategory = ServiceCategory.builder()
                 .name(request.getName())
@@ -83,44 +84,74 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.findById(id)
                 .filter(c -> c.getDeletedAt() == null)
                 .map(this::mapToResponse)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
     }
 
     @Override
     @Transactional
-    public CategoryResponse updateCategory(UUID id, BaseCategoryRequest request) {
+    public CategoryResponse updateCategory(UUID id, CategoryUpdateRequest request) {
         ServiceCategory category = categoryRepository.findById(id)
-                .filter(c -> c.getDeletedAt() == null)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+                .filter(c -> c.getDeletedAt() == null && c.getParent() == null)
+                .orElseThrow(() -> new ResourceNotFoundException("Top-level category not found"));
 
-        category.setName(request.getName());
-        category.setDescription(request.getDescription());
-        category.setStatus(request.getStatus());
-        category.setDisplayOrder(request.getDisplayOrder());
-
-        if (request instanceof SubcategoryCreateRequest subRequest && subRequest.getParentId() != null) {
-            ServiceCategory parent = categoryRepository.findById(subRequest.getParentId())
-                    .filter(c -> c.getDeletedAt() == null)
-                    .orElseThrow(() -> new IllegalArgumentException("Parent category not found"));
-            category.setParent(parent);
-        }
-
-        if (request.getIconId() != null) {
-            imageRepository.findById(request.getIconId())
-                    .ifPresent(category::setIcon);
-        }
+        updateBaseFields(category, request);
 
         return mapToResponse(categoryRepository.save(category));
     }
 
     @Override
     @Transactional
+    public CategoryResponse updateSubcategory(UUID id, SubcategoryUpdateRequest request) {
+        ServiceCategory subcategory = categoryRepository.findById(id)
+                .filter(c -> c.getDeletedAt() == null && c.getParent() != null)
+                .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
+
+        updateBaseFields(subcategory, request);
+
+        if (request.getParentId() != null) {
+            ServiceCategory parent = categoryRepository.findById(request.getParentId())
+                    .filter(c -> c.getDeletedAt() == null)
+                    .orElseThrow(() -> new ResourceNotFoundException("Parent category not found"));
+            subcategory.setParent(parent);
+        }
+
+        return mapToResponse(categoryRepository.save(subcategory));
+    }
+
+    @Override
+    @Transactional
     public void deleteCategory(UUID id) {
         ServiceCategory category = categoryRepository.findById(id)
-                .filter(c -> c.getDeletedAt() == null)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-        category.setDeletedAt(java.time.LocalDateTime.now());
+                .filter(c -> c.getDeletedAt() == null && c.getParent() == null)
+                .orElseThrow(() -> new ResourceNotFoundException("Top-level category not found"));
+        
+        category.setDeletedAt(LocalDateTime.now());
         categoryRepository.save(category);
+    }
+
+    @Override
+    @Transactional
+    public void deleteSubcategory(UUID id) {
+        ServiceCategory subcategory = categoryRepository.findById(id)
+                .filter(c -> c.getDeletedAt() == null && c.getParent() != null)
+                .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
+        
+        subcategory.setDeletedAt(LocalDateTime.now());
+        categoryRepository.save(subcategory);
+    }
+
+    private void updateBaseFields(ServiceCategory entity, BaseCategoryRequest request) {
+        entity.setName(request.getName());
+        entity.setDescription(request.getDescription());
+        entity.setStatus(request.getStatus());
+        entity.setDisplayOrder(request.getDisplayOrder());
+
+        if (request.getIconId() != null) {
+            imageRepository.findById(request.getIconId())
+                    .ifPresent(entity::setIcon);
+        } else {
+            entity.setIcon(null);
+        }
     }
 
     private CategoryResponse mapToResponse(ServiceCategory entity) {
