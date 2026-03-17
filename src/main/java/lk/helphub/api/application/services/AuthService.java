@@ -42,7 +42,11 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already in use");
+            throw new IllegalArgumentException("User with this email already exists");
+        }
+
+        if (!request.getPassword().equals(request.getPasswordConfirmation())) {
+            throw new IllegalArgumentException("Passwords do not match");
         }
 
         Role userRole = roleRepository.findByName("USER")
@@ -52,6 +56,8 @@ public class AuthService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
+                .dateOfBirth(request.getDateOfBirth())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .status("active")
                 .userType("customer")

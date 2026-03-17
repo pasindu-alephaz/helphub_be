@@ -44,7 +44,7 @@ public class AuthController {
                 examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"BAD_REQUEST\",\n  \"message\": \"User with this email already exists\"\n}")))
     })
     public ResponseEntity<ApiResponse<AuthResponse>> register(
-            @RequestBody RegisterRequest request
+            @Valid @RequestBody RegisterRequest request
     ) {
         AuthResponse response = authService.register(request);
         return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
