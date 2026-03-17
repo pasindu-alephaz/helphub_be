@@ -14,4 +14,11 @@ public interface CategoryService {
     CategoryResponse updateSubcategory(UUID id, SubcategoryUpdateRequest request);
     void deleteCategory(UUID id);
     void deleteSubcategory(UUID id);
+
+    // Request & Approval Flow
+    CategoryResponse requestCategory(CategoryCreateRequest request);
+    CategoryResponse requestSubcategory(SubcategoryCreateRequest request);
+    List<CategoryResponse> getPendingRequests();
+    CategoryResponse approveRequest(UUID id);
+    void rejectRequest(UUID id);
 }
