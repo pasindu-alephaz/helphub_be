@@ -1,0 +1,2119 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HelpHub API",
+    "description": "API Documentation for HelpHub application",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Verification",
+      "description": "Email and phone number verification APIs"
+    },
+    {
+      "name": "Roles",
+      "description": "Role management APIs"
+    },
+    {
+      "name": "Permissions",
+      "description": "Permission management APIs (Read-Only)"
+    },
+    {
+      "name": "Service Categories",
+      "description": "APIs for managing service categories and subcategories"
+    },
+    {
+      "name": "Authentication",
+      "description": "User registration and login APIs"
+    },
+    {
+      "name": "Authentication",
+      "description": "Authentication and password management endpoints"
+    },
+    {
+      "name": "Profile",
+      "description": "User profile management APIs"
+    }
+  ],
+  "paths": {
+    "/api/v1/subcategories/{id}": {
+      "get": {
+        "tags": [
+          "Service Categories"
+        ],
+        "summary": "Get subcategory details",
+        "description": "Retrieves details of a specific subcategory by ID",
+        "operationId": "getSubcategoryById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subcategory retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subcategory not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Service Categories"
+        ],
+        "summary": "Update subcategory",
+        "description": "Updates an existing subcategory",
+        "operationId": "updateSubcategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubcategoryUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Subcategory updated successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subcategory not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Service Categories"
+        ],
+        "summary": "Delete subcategory",
+        "description": "Deletes a subcategory (soft delete)",
+        "operationId": "deleteSubcategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subcategory deleted successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subcategory not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/roles/{id}": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Get role by ID",
+        "description": "Retrieves a single role by its ID",
+        "operationId": "getById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the role to retrieve",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRole"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Role not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRole"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Update a role",
+        "description": "Updates an existing role by its ID",
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the role to update",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Role"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRole"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Role not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRole"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body or existing role",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRole"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Delete a role",
+        "description": "Deletes a role by its ID",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the role to delete",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Role deleted successfully"
+          },
+          "404": {
+            "description": "Role not found"
+          }
+        }
+      }
+    },
+    "/api/v1/profile": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Get user profile",
+        "description": "Retrieves the profile information of the currently authenticated user",
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "description": "Profile retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Valid JWT token required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseProfileResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User profile not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Update user profile",
+        "description": "Updates the profile information of the currently authenticated user",
+        "operationId": "updateProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body or validation errors",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Valid JWT token required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseProfileResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User profile not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{id}": {
+      "get": {
+        "tags": [
+          "Service Categories"
+        ],
+        "summary": "Get category details",
+        "description": "Retrieves details of a specific top-level category by ID",
+        "operationId": "getCategoryById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Service Categories"
+        ],
+        "summary": "Update category",
+        "description": "Updates an existing top-level service category",
+        "operationId": "updateCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Category updated successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Service Categories"
+        ],
+        "summary": "Delete category",
+        "description": "Deletes a top-level service category (soft delete)",
+        "operationId": "deleteCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category deleted successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subcategories": {
+      "post": {
+        "tags": [
+          "Service Categories"
+        ],
+        "summary": "Create subcategory",
+        "description": "Creates a new subcategory using parentId in request body",
+        "operationId": "createSubcategory",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubcategoryCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Subcategory created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parent category not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/roles": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Get all roles",
+        "description": "Retrieves a list of all roles",
+        "operationId": "getAll",
+        "responses": {
+          "200": {
+            "description": "List of roles retrieved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListRole"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Create a new role",
+        "description": "Creates a new role resource",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Role"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Role created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRole"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body or existing role",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRole"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/roles/{id}/permissions": {
+      "post": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Assign permissions to a role",
+        "description": "Replaces the permissions assigned to an existing role",
+        "operationId": "assignPermissions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the role to update",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "uniqueItems": true
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Permissions assigned successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRole"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Role or permission not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRole"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRole"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "tags": [
+          "Service Categories"
+        ],
+        "summary": "List categories",
+        "description": "Retrieves all service categories in a unified hierarchical or flat structure",
+        "operationId": "getAllCategories",
+        "parameters": [
+          {
+            "name": "hierarchical",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListCategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Service Categories"
+        ],
+        "summary": "Create top-level category",
+        "description": "Creates a new top-level service category",
+        "operationId": "createCategory",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Category created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-2fa": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "verify2fa",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verification/verify": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Verify OTP",
+        "description": "Verifies an OTP code using the token received from the send endpoint",
+        "operationId": "verifyOtp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Verification successful",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, expired, or already used OTP",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verification/send": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Send verification OTP",
+        "description": "Sends a verification OTP to the provided email and/or phone number. Returns token(s) to use when verifying.",
+        "operationId": "sendVerificationOtp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Verification OTP sent successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSendVerificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — at least one of email or phone number is required",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSendVerificationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Reset Password",
+        "description": "Resets the user's password using the OTP received in email",
+        "operationId": "resetPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or expired OTP, or invalid new password",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register user",
+        "description": "Registers a new user in the system",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User registered successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body or validation errors",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAuthResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already exists",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login user",
+        "description": "Authenticates a user and returns a JWT token",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User logged in successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Forgot Password",
+        "description": "Initiates a password reset by sending a reset OTP to the user's email",
+        "operationId": "forgotPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset OTP sent successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or user not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/permissions": {
+      "get": {
+        "tags": [
+          "Permissions"
+        ],
+        "summary": "Get all permissions",
+        "description": "Retrieves a list of all permissions",
+        "operationId": "getAll_1",
+        "responses": {
+          "200": {
+            "description": "List of permissions retrieved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListPermission"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/permissions/{id}": {
+      "get": {
+        "tags": [
+          "Permissions"
+        ],
+        "summary": "Get permission by ID",
+        "description": "Retrieves a single permission by its ID",
+        "operationId": "getById_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the permission to retrieve",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePermission"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Permission not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePermission"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SubcategoryUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "iconId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ApiResponseCategoryResponse": {
+        "type": "object",
+        "description": "Generic API response wrapper",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "description": "Indicates whether the API request was successful or not",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message providing more details about the outcome",
+            "example": "Operation completed successfully"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of field/property names to arrays of error messages, populated during validation failures"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CategoryResponse",
+            "description": "The payload/data returned by the endpoint, shape depends on the exact endpoint"
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Internal application-specific status code mapping to business logic outcomes",
+            "enum": [
+              "SUCCESS",
+              "TWO_FA_REQUIRED",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "VALIDATION_ERROR",
+              "INTERNAL_SERVER_ERROR",
+              "BAD_REQUEST"
+            ],
+            "example": "SUCCESS"
+          }
+        }
+      },
+      "CategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "iconId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "subcategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryResponse"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Permission": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "ApiResponseRole": {
+        "type": "object",
+        "description": "Generic API response wrapper",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "description": "Indicates whether the API request was successful or not",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message providing more details about the outcome",
+            "example": "Operation completed successfully"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of field/property names to arrays of error messages, populated during validation failures"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Role",
+            "description": "The payload/data returned by the endpoint, shape depends on the exact endpoint"
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Internal application-specific status code mapping to business logic outcomes",
+            "enum": [
+              "SUCCESS",
+              "TWO_FA_REQUIRED",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "VALIDATION_ERROR",
+              "INTERNAL_SERVER_ERROR",
+              "BAD_REQUEST"
+            ],
+            "example": "SUCCESS"
+          }
+        }
+      },
+      "UpdateProfileRequest": {
+        "type": "object",
+        "description": "Request object for updating user profile",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "User's first name",
+            "example": "John",
+            "maxLength": 100,
+            "minLength": 0
+          },
+          "lastName": {
+            "type": "string",
+            "description": "User's last name",
+            "example": "Doe",
+            "maxLength": 100,
+            "minLength": 0
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "User's phone number",
+            "example": "+1234567890",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "bio": {
+            "type": "string",
+            "description": "Detailed bio or about me section",
+            "example": "Software Engineer with 5 years of experience."
+          }
+        }
+      },
+      "ApiResponseProfileResponse": {
+        "type": "object",
+        "description": "Generic API response wrapper",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "description": "Indicates whether the API request was successful or not",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message providing more details about the outcome",
+            "example": "Operation completed successfully"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of field/property names to arrays of error messages, populated during validation failures"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProfileResponse",
+            "description": "The payload/data returned by the endpoint, shape depends on the exact endpoint"
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Internal application-specific status code mapping to business logic outcomes",
+            "enum": [
+              "SUCCESS",
+              "TWO_FA_REQUIRED",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "VALIDATION_ERROR",
+              "INTERNAL_SERVER_ERROR",
+              "BAD_REQUEST"
+            ],
+            "example": "SUCCESS"
+          }
+        }
+      },
+      "ProfileResponse": {
+        "type": "object",
+        "description": "User profile response details",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier of the user",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "User's first name",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "User's last name",
+            "example": "Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "User's email address",
+            "example": "john.doe@example.com"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "User's phone number",
+            "example": "+1234567890"
+          },
+          "bio": {
+            "type": "string",
+            "description": "Detailed bio or about me section",
+            "example": "Software Engineer with 5 years of experience."
+          },
+          "userType": {
+            "type": "string",
+            "description": "Type of user account",
+            "example": "REGULAR"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the user account",
+            "example": "ACTIVE"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the profile was created",
+            "example": "2023-10-27T10:00:00"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the profile was last updated",
+            "example": "2023-10-27T10:00:00"
+          }
+        }
+      },
+      "CategoryUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "iconId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "SubcategoryCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "iconId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "CategoryCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "iconId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "VerifyOtpRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "The verification token received from the send endpoint",
+            "example": "a1b2c3d4e5f6..."
+          },
+          "otp": {
+            "type": "string",
+            "description": "The 6-digit OTP code",
+            "example": 123456,
+            "maxLength": 6,
+            "minLength": 6
+          }
+        },
+        "required": [
+          "email",
+          "otp",
+          "token"
+        ]
+      },
+      "ApiResponseAuthResponse": {
+        "type": "object",
+        "description": "Generic API response wrapper",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "description": "Indicates whether the API request was successful or not",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message providing more details about the outcome",
+            "example": "Operation completed successfully"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of field/property names to arrays of error messages, populated during validation failures"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AuthResponse",
+            "description": "The payload/data returned by the endpoint, shape depends on the exact endpoint"
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Internal application-specific status code mapping to business logic outcomes",
+            "enum": [
+              "SUCCESS",
+              "TWO_FA_REQUIRED",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "VALIDATION_ERROR",
+              "INTERNAL_SERVER_ERROR",
+              "BAD_REQUEST"
+            ],
+            "example": "SUCCESS"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "description": "Response containing authentication token",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT authentication token",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "twoFactorRequired": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseVoid": {
+        "type": "object",
+        "description": "Generic API response wrapper",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "description": "Indicates whether the API request was successful or not",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message providing more details about the outcome",
+            "example": "Operation completed successfully"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of field/property names to arrays of error messages, populated during validation failures"
+          },
+          "data": {
+            "type": "object",
+            "description": "The payload/data returned by the endpoint, shape depends on the exact endpoint"
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Internal application-specific status code mapping to business logic outcomes",
+            "enum": [
+              "SUCCESS",
+              "TWO_FA_REQUIRED",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "VALIDATION_ERROR",
+              "INTERNAL_SERVER_ERROR",
+              "BAD_REQUEST"
+            ],
+            "example": "SUCCESS"
+          }
+        }
+      },
+      "SendVerificationRequest": {
+        "type": "object",
+        "description": "Request to send verification OTP(s) for email and/or phone",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address to verify",
+            "example": "john.doe@example.com"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number to verify (with country code)",
+            "example": "+94771234567"
+          }
+        }
+      },
+      "ApiResponseSendVerificationResponse": {
+        "type": "object",
+        "description": "Generic API response wrapper",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "description": "Indicates whether the API request was successful or not",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message providing more details about the outcome",
+            "example": "Operation completed successfully"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of field/property names to arrays of error messages, populated during validation failures"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SendVerificationResponse",
+            "description": "The payload/data returned by the endpoint, shape depends on the exact endpoint"
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Internal application-specific status code mapping to business logic outcomes",
+            "enum": [
+              "SUCCESS",
+              "TWO_FA_REQUIRED",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "VALIDATION_ERROR",
+              "INTERNAL_SERVER_ERROR",
+              "BAD_REQUEST"
+            ],
+            "example": "SUCCESS"
+          }
+        }
+      },
+      "SendVerificationResponse": {
+        "type": "object",
+        "description": "Response containing verification token(s) for OTP validation",
+        "properties": {
+          "emailToken": {
+            "type": "string",
+            "description": "Token for email OTP verification",
+            "example": "a1b2c3d4e5f6..."
+          },
+          "phoneToken": {
+            "type": "string",
+            "description": "Token for phone OTP verification",
+            "example": "f6e5d4c3b2a1..."
+          }
+        }
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "otp": {
+            "type": "string",
+            "description": "OTP received in email",
+            "example": 123456
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password for the account",
+            "example": "SecureP@ssw0rd123",
+            "maxLength": 2147483647,
+            "minLength": 8
+          }
+        },
+        "required": [
+          "newPassword",
+          "otp"
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "description": "Request object for user registration",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "User's first name",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "User's last name",
+            "example": "Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "User's email address",
+            "example": "john.doe@example.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "User's password",
+            "example": "SecurePass123!"
+          }
+        },
+        "required": [
+          "email",
+          "firstName",
+          "lastName",
+          "password"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "description": "Request object for user login",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User's email address",
+            "example": "john.doe@example.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "User's password",
+            "example": "SecurePass123!"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User's registered email address",
+            "example": "john.doe@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ApiResponseListRole": {
+        "type": "object",
+        "description": "Generic API response wrapper",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "description": "Indicates whether the API request was successful or not",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message providing more details about the outcome",
+            "example": "Operation completed successfully"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of field/property names to arrays of error messages, populated during validation failures"
+          },
+          "data": {
+            "type": "array",
+            "description": "The payload/data returned by the endpoint, shape depends on the exact endpoint",
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            }
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Internal application-specific status code mapping to business logic outcomes",
+            "enum": [
+              "SUCCESS",
+              "TWO_FA_REQUIRED",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "VALIDATION_ERROR",
+              "INTERNAL_SERVER_ERROR",
+              "BAD_REQUEST"
+            ],
+            "example": "SUCCESS"
+          }
+        }
+      },
+      "ApiResponseListPermission": {
+        "type": "object",
+        "description": "Generic API response wrapper",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "description": "Indicates whether the API request was successful or not",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message providing more details about the outcome",
+            "example": "Operation completed successfully"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of field/property names to arrays of error messages, populated during validation failures"
+          },
+          "data": {
+            "type": "array",
+            "description": "The payload/data returned by the endpoint, shape depends on the exact endpoint",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            }
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Internal application-specific status code mapping to business logic outcomes",
+            "enum": [
+              "SUCCESS",
+              "TWO_FA_REQUIRED",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "VALIDATION_ERROR",
+              "INTERNAL_SERVER_ERROR",
+              "BAD_REQUEST"
+            ],
+            "example": "SUCCESS"
+          }
+        }
+      },
+      "ApiResponsePermission": {
+        "type": "object",
+        "description": "Generic API response wrapper",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "description": "Indicates whether the API request was successful or not",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message providing more details about the outcome",
+            "example": "Operation completed successfully"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of field/property names to arrays of error messages, populated during validation failures"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Permission",
+            "description": "The payload/data returned by the endpoint, shape depends on the exact endpoint"
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Internal application-specific status code mapping to business logic outcomes",
+            "enum": [
+              "SUCCESS",
+              "TWO_FA_REQUIRED",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "VALIDATION_ERROR",
+              "INTERNAL_SERVER_ERROR",
+              "BAD_REQUEST"
+            ],
+            "example": "SUCCESS"
+          }
+        }
+      },
+      "ApiResponseListCategoryResponse": {
+        "type": "object",
+        "description": "Generic API response wrapper",
+        "properties": {
+          "status": {
+            "type": "boolean",
+            "description": "Indicates whether the API request was successful or not",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message providing more details about the outcome",
+            "example": "Operation completed successfully"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Map of field/property names to arrays of error messages, populated during validation failures"
+          },
+          "data": {
+            "type": "array",
+            "description": "The payload/data returned by the endpoint, shape depends on the exact endpoint",
+            "items": {
+              "$ref": "#/components/schemas/CategoryResponse"
+            }
+          },
+          "status_code": {
+            "type": "string",
+            "description": "Internal application-specific status code mapping to business logic outcomes",
+            "enum": [
+              "SUCCESS",
+              "TWO_FA_REQUIRED",
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "VALIDATION_ERROR",
+              "INTERNAL_SERVER_ERROR",
+              "BAD_REQUEST"
+            ],
+            "example": "SUCCESS"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "description": "Enter your JWT token",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

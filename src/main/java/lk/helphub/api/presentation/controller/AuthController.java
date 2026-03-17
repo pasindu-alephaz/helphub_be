@@ -2,7 +2,6 @@ package lk.helphub.api.presentation.controller;
 
 import lk.helphub.api.application.services.AuthService;
 import jakarta.validation.Valid;
-import lk.helphub.api.application.AuthService;
 import lk.helphub.api.application.dto.AuthResponse;
 import lk.helphub.api.application.dto.LoginRequest;
 import lk.helphub.api.application.dto.RegisterRequest;

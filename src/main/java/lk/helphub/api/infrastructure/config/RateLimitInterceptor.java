@@ -2,9 +2,10 @@ package lk.helphub.api.infrastructure.config;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.bucket4j.Bandwidth;
-import io.bucket4j.Bucket;
-import io.bucket4j.Refill;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Refill;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -87,7 +88,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
             requestsPerMinute = otpSendRequestsPerMinute; // default
         }
 
-        return Bucket.builder()
+        return Bucket4j.builder()
                 .addLimit(Bandwidth.classic(requestsPerMinute, Refill.greedy(requestsPerMinute, Duration.ofMinutes(1))))
                 .build();
     }
