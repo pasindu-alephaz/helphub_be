@@ -88,6 +88,19 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public CategoryResponse getSubcategoryById(UUID categoryId, UUID subCategoryId) {
+        ServiceCategory subcategory = categoryRepository.findById(subCategoryId)
+                .filter(c -> c.getDeletedAt() == null && c.getParent() != null)
+                .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
+
+        if (!subcategory.getParent().getId().equals(categoryId)) {
+            throw new IllegalArgumentException("Subcategory does not belong to the specified category");
+        }
+
+        return mapToResponse(subcategory);
+    }
+
+    @Override
     @Transactional
     public CategoryResponse updateCategory(UUID id, CategoryUpdateRequest request) {
         ServiceCategory category = categoryRepository.findById(id)
@@ -101,10 +114,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryResponse updateSubcategory(UUID id, SubcategoryUpdateRequest request) {
-        ServiceCategory subcategory = categoryRepository.findById(id)
+    public CategoryResponse updateSubcategory(UUID categoryId, UUID subCategoryId, SubcategoryUpdateRequest request) {
+        ServiceCategory subcategory = categoryRepository.findById(subCategoryId)
                 .filter(c -> c.getDeletedAt() == null && c.getParent() != null)
                 .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
+
+        if (!subcategory.getParent().getId().equals(categoryId)) {
+            throw new IllegalArgumentException("Subcategory does not belong to the specified category");
+        }
 
         updateBaseFields(subcategory, request);
 
@@ -131,13 +148,93 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public void deleteSubcategory(UUID id) {
-        ServiceCategory subcategory = categoryRepository.findById(id)
+    public void deleteSubcategory(UUID categoryId, UUID subCategoryId) {
+        ServiceCategory subcategory = categoryRepository.findById(subCategoryId)
                 .filter(c -> c.getDeletedAt() == null && c.getParent() != null)
                 .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
+
+        if (!subcategory.getParent().getId().equals(categoryId)) {
+            throw new IllegalArgumentException("Subcategory does not belong to the specified category");
+        }
         
         subcategory.setDeletedAt(LocalDateTime.now());
         categoryRepository.save(subcategory);
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse requestCategory(CategoryCreateRequest request) {
+        ServiceCategory category = ServiceCategory.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .status("pending")
+                .displayOrder(request.getDisplayOrder())
+                .build();
+
+        if (request.getIconId() != null) {
+            imageRepository.findById(request.getIconId())
+                    .ifPresent(category::setIcon);
+        }
+
+        return mapToResponse(categoryRepository.save(category));
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse requestSubcategory(SubcategoryCreateRequest request) {
+        if (request.getParentId() == null) {
+            throw new IllegalArgumentException("Parent category ID is required for subcategory requests");
+        }
+
+        ServiceCategory parent = categoryRepository.findById(request.getParentId())
+                .filter(c -> c.getDeletedAt() == null)
+                .orElseThrow(() -> new ResourceNotFoundException("Parent category not found"));
+
+        ServiceCategory subcategory = ServiceCategory.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .status("pending")
+                .displayOrder(request.getDisplayOrder())
+                .parent(parent)
+                .build();
+
+        if (request.getIconId() != null) {
+            imageRepository.findById(request.getIconId())
+                    .ifPresent(subcategory::setIcon);
+        }
+
+        return mapToResponse(categoryRepository.save(subcategory));
+    }
+
+    @Override
+    public List<CategoryResponse> getPendingRequests() {
+        return categoryRepository.findAllByDeletedAtIsNull().stream()
+                .filter(c -> "pending".equals(c.getStatus()))
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse approveRequest(UUID id) {
+        ServiceCategory category = categoryRepository.findById(id)
+                .filter(c -> c.getDeletedAt() == null && "pending".equals(c.getStatus()))
+                .orElseThrow(() -> new ResourceNotFoundException("Pending category request not found"));
+
+        category.setStatus("active");
+        return mapToResponse(categoryRepository.save(category));
+    }
+
+    @Override
+    @Transactional
+    public void rejectRequest(UUID id) {
+        ServiceCategory category = categoryRepository.findById(id)
+                .filter(c -> c.getDeletedAt() == null && "pending".equals(c.getStatus()))
+                .orElseThrow(() -> new ResourceNotFoundException("Pending category request not found"));
+
+        category.setStatus("rejected");
+        category.setDeletedAt(LocalDateTime.now()); // Optional: soft delete on rejection
+        categoryRepository.save(category);
     }
 
     private void updateBaseFields(ServiceCategory entity, BaseCategoryRequest request) {

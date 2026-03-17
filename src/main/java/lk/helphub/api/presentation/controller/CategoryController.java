@@ -16,15 +16,16 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@Tag(name = "Service Categories", description = "APIs for managing service categories and subcategories")
+@Tag(name = "Service Categories", description = "APIs for users to view and request service categories")
 public class CategoryController {
 
     private final CategoryService categoryService;
 
-    // --- Global/Shared Endpoints ---
+    // --- User Facing Endpoints ---
 
-    @GetMapping("/api/v1/categories")
+    @GetMapping("/categories")
     @Operation(summary = "List categories", description = "Retrieves all service categories in a unified hierarchical or flat structure")
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategories(
             @RequestParam(defaultValue = "true") boolean hierarchical
@@ -38,25 +39,7 @@ public class CategoryController {
                 .build());
     }
 
-    // --- Category Specific Endpoints ---
-
-    @PostMapping("/api/v1/categories")
-    @Operation(summary = "Create top-level category", description = "Creates a new top-level service category")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Category created successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
-    })
-    public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(@Valid @RequestBody CategoryCreateRequest request) {
-        CategoryResponse response = categoryService.createCategory(request);
-        return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
-                .status(true)
-                .statusCode(ResponseStatusCode.SUCCESS)
-                .message("Category created successfully")
-                .data(response)
-                .build());
-    }
-
-    @GetMapping("/api/v1/categories/{id}")
+    @GetMapping("/categories/{id}")
     @Operation(summary = "Get category details", description = "Retrieves details of a specific top-level category by ID")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Category retrieved successfully"),
@@ -72,66 +55,17 @@ public class CategoryController {
                 .build());
     }
 
-    @PutMapping("/api/v1/categories/{id}")
-    @Operation(summary = "Update category", description = "Updates an existing top-level service category")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Category updated successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Category not found")
-    })
-    public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(
-            @PathVariable UUID id,
-            @Valid @RequestBody CategoryUpdateRequest request
-    ) {
-        CategoryResponse response = categoryService.updateCategory(id, request);
-        return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
-                .status(true)
-                .statusCode(ResponseStatusCode.SUCCESS)
-                .message("Category updated successfully")
-                .data(response)
-                .build());
-    }
-
-    @DeleteMapping("/api/v1/categories/{id}")
-    @Operation(summary = "Delete category", description = "Deletes a top-level service category (soft delete)")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Category deleted successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Category not found")
-    })
-    public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable UUID id) {
-        categoryService.deleteCategory(id);
-        return ResponseEntity.ok(ApiResponse.<Void>builder()
-                .status(true)
-                .statusCode(ResponseStatusCode.SUCCESS)
-                .message("Category deleted successfully")
-                .build());
-    }
-
-    // --- Subcategory Specific Endpoints ---
-
-    @PostMapping("/api/v1/subcategories")
-    @Operation(summary = "Create subcategory", description = "Creates a new subcategory using parentId in request body")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Subcategory created successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Parent category not found")
-    })
-    public ResponseEntity<ApiResponse<CategoryResponse>> createSubcategory(@Valid @RequestBody SubcategoryCreateRequest request) {
-        CategoryResponse response = categoryService.createSubcategory(request);
-        return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
-                .status(true)
-                .statusCode(ResponseStatusCode.SUCCESS)
-                .message("Subcategory created successfully")
-                .data(response)
-                .build());
-    }
-
-    @GetMapping("/api/v1/subcategories/{id}")
+    @GetMapping("/categories/{categoryId}/subcategories/{subCategoryId}")
     @Operation(summary = "Get subcategory details", description = "Retrieves details of a specific subcategory by ID")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Subcategory retrieved successfully"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Subcategory not found")
     })
-    public ResponseEntity<ApiResponse<CategoryResponse>> getSubcategoryById(@PathVariable UUID id) {
-        CategoryResponse subcategory = categoryService.getCategoryById(id);
+    public ResponseEntity<ApiResponse<CategoryResponse>> getSubcategoryById(
+            @PathVariable UUID categoryId,
+            @PathVariable UUID subCategoryId
+    ) {
+        CategoryResponse subcategory = categoryService.getSubcategoryById(categoryId, subCategoryId);
         return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
@@ -140,37 +74,39 @@ public class CategoryController {
                 .build());
     }
 
-    @PutMapping("/api/v1/subcategories/{id}")
-    @Operation(summary = "Update subcategory", description = "Updates an existing subcategory")
+    @PostMapping("/categories/request")
+    @Operation(summary = "Request new category", description = "Allows users to suggest a new top-level service category")
     @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Subcategory updated successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Subcategory not found")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Request submitted successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    public ResponseEntity<ApiResponse<CategoryResponse>> updateSubcategory(
-            @PathVariable UUID id,
-            @Valid @RequestBody SubcategoryUpdateRequest request
-    ) {
-        CategoryResponse response = categoryService.updateSubcategory(id, request);
+    public ResponseEntity<ApiResponse<CategoryResponse>> requestCategory(@Valid @RequestBody CategoryCreateRequest request) {
+        CategoryResponse response = categoryService.requestCategory(request);
         return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
-                .message("Subcategory updated successfully")
+                .message("Category request submitted successfully. Admin will review it.")
                 .data(response)
                 .build());
     }
 
-    @DeleteMapping("/api/v1/subcategories/{id}")
-    @Operation(summary = "Delete subcategory", description = "Deletes a subcategory (soft delete)")
+    @PostMapping("/categories/{categoryId}/subcategories/request")
+    @Operation(summary = "Request new subcategory", description = "Allows users to suggest a new subcategory for an existing category")
     @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Subcategory deleted successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Subcategory not found")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Request submitted successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    public ResponseEntity<ApiResponse<Void>> deleteSubcategory(@PathVariable UUID id) {
-        categoryService.deleteSubcategory(id);
-        return ResponseEntity.ok(ApiResponse.<Void>builder()
+    public ResponseEntity<ApiResponse<CategoryResponse>> requestSubcategory(
+            @PathVariable UUID categoryId,
+            @Valid @RequestBody SubcategoryCreateRequest request
+    ) {
+        request.setParentId(categoryId);
+        CategoryResponse response = categoryService.requestSubcategory(request);
+        return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
-                .message("Subcategory deleted successfully")
+                .message("Subcategory request submitted successfully. Admin will review it.")
+                .data(response)
                 .build());
     }
 }
