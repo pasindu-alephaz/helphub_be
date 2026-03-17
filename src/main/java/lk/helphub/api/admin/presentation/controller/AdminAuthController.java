@@ -1,9 +1,9 @@
-package lk.helphub.api.presentation.controller.admin;
+package lk.helphub.api.admin.presentation.controller;
 
 import lk.helphub.api.application.dto.AuthResponse;
 import lk.helphub.api.application.dto.LoginRequest;
 import lk.helphub.api.application.dto.VerifyOtpRequest;
-import lk.helphub.api.application.services.AdminAuthService;
+import lk.helphub.api.admin.application.services.AdminAuthService;
 import lk.helphub.api.domain.enums.ResponseStatusCode;
 import lk.helphub.api.presentation.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;

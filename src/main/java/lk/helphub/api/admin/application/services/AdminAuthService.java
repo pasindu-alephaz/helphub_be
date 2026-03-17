@@ -1,5 +1,5 @@
-package lk.helphub.api.application.services;
-
+package lk.helphub.api.admin.application.services;
+import lk.helphub.api.application.services.MailService;
 import lk.helphub.api.application.dto.AuthResponse;
 import lk.helphub.api.application.dto.LoginRequest;
 import lk.helphub.api.application.dto.VerifyOtpRequest;
@@ -51,10 +51,8 @@ public class AdminAuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Verify the user has the ADMIN role
-        boolean isAdmin = user.getRoles().stream()
-                .anyMatch(role -> "ADMIN".equals(role.getName()));
-        if (!isAdmin) {
+        // Verify the user has ADMIN role OR admin-access permission
+        if (!hasAdminAccess(user)) {
             throw new AccessDeniedException("Access denied. This login is for administrators only.");
         }
 
@@ -96,10 +94,8 @@ public class AdminAuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Verify the user has the ADMIN role
-        boolean isAdmin = user.getRoles().stream()
-                .anyMatch(role -> "ADMIN".equals(role.getName()));
-        if (!isAdmin) {
+        // Verify the user has ADMIN role OR admin-access permission
+        if (!hasAdminAccess(user)) {
             throw new AccessDeniedException("Access denied. This endpoint is for administrators only.");
         }
 
@@ -119,5 +115,27 @@ public class AdminAuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         var jwtToken = jwtUtil.generateToken(userDetails);
         return AuthResponse.builder().token(jwtToken).build();
+    }
+
+    /**
+     * Checks if the user has admin access either through the ADMIN role
+     * or through the admin-access permission.
+     *
+     * @param user the user to check
+     * @return true if the user has admin access, false otherwise
+     */
+    private boolean hasAdminAccess(User user) {
+        // Check if user has ADMIN role
+        boolean hasAdminRole = user.getRoles().stream()
+                .anyMatch(role -> "ADMIN".equals(role.getName()));
+
+        if (hasAdminRole) {
+            return true;
+        }
+
+        // Check if user has admin-access permission via any of their roles
+        return user.getRoles().stream()
+                .flatMap(role -> role.getPermissions().stream())
+                .anyMatch(permission -> "admin-access".equals(permission.getSlug()));
     }
 }

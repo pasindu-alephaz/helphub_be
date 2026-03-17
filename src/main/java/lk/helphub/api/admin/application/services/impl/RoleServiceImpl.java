@@ -1,6 +1,6 @@
-package lk.helphub.api.application.services.impl;
+package lk.helphub.api.admin.application.services.impl;
 
-import lk.helphub.api.application.services.RoleService;
+import lk.helphub.api.admin.application.services.RoleService;
 import lk.helphub.api.domain.entity.Permission;
 import lk.helphub.api.domain.entity.Role;
 import lk.helphub.api.domain.repository.PermissionRepository;

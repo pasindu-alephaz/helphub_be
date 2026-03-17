@@ -8,5 +8,6 @@
     <!-- Include your migration files here -->
     <include file="db/changelog/changes/001-initial-schema.sql"/>
     <include file="db/changelog/changes/002-service-categories.sql"/>
+    <include file="db/changelog/changes/003-job-postings.sql"/>
 
 </databaseChangeLog>
