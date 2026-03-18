@@ -20,6 +20,9 @@ public class TextitSmsServiceImpl implements SmsService {
     @Value("${textit.api-key}")
     private String apiKey;
 
+    @Value("${textit.sms.enabled:false}")
+    private boolean smsEnabled;
+
     private final RestTemplate restTemplate;
 
     public TextitSmsServiceImpl() {
@@ -28,6 +31,11 @@ public class TextitSmsServiceImpl implements SmsService {
 
     @Override
     public void sendSms(String to, String message) {
+        if (!smsEnabled) {
+            log.info("SMS sending is disabled. Skipping sending SMS to {}. Message: {}", to, message);
+            return;
+        }
+
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
