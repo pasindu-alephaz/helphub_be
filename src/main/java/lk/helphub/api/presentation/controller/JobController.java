@@ -25,6 +25,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.UUID;
+import java.util.List;
+import java.math.BigDecimal;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 @RestController
 @RequestMapping("/api/v1/jobs")
@@ -120,6 +126,70 @@ public class JobController {
                 .statusCode(ResponseStatusCode.SUCCESS)
                 .message("Job Template created successfully")
                 .data(response)
+                .build());
+    }
+
+    @GetMapping
+    @Operation(summary = "List and filter jobs", description = "List jobs with pagination and optional filters")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Jobs retrieved successfully")
+    })
+    public ResponseEntity<ApiResponse<Page<JobResponse>>> getJobs(
+            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable,
+            @Parameter(description = "Filter by subcategory UUID") @RequestParam(required = false) UUID subcategoryId,
+            @Parameter(description = "Filter by status (OPEN, IN_PROGRESS, COMPLETED, CANCELLED)") @RequestParam(required = false) String status,
+            @Parameter(description = "Filter by urgency (Normal, Urgent)") @RequestParam(required = false) String urgencyFlag,
+            @Parameter(description = "Minimum price") @RequestParam(required = false) BigDecimal minPrice,
+            @Parameter(description = "Maximum price") @RequestParam(required = false) BigDecimal maxPrice,
+            @Parameter(description = "Filter by location city (fuzzy search)") @RequestParam(required = false) String locationCity,
+            @Parameter(description = "Filter by job type (FIXED, BIDDING)") @RequestParam(required = false) String jobType
+    ) {
+        Page<JobResponse> jobs = jobService.getJobs(pageable, subcategoryId, status, urgencyFlag, minPrice, maxPrice, locationCity, jobType);
+        return ResponseEntity.ok(ApiResponse.<Page<JobResponse>>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Jobs retrieved successfully")
+                .data(jobs)
+                .build());
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get job details", description = "Retrieve full details of a specific job by its ID")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Job details retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Job not found",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Job not found\"\n}")))
+    })
+    public ResponseEntity<ApiResponse<JobResponse>> getJobById(@Parameter(description = "ID of the job") @PathVariable UUID id) {
+        JobResponse response = jobService.getJobById(id);
+        return ResponseEntity.ok(ApiResponse.<JobResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Job retrieved successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/nearby")
+    @Operation(summary = "Find nearby jobs", description = "Find jobs within a specific radius using geographic coordinates")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Nearby jobs retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid coordinate format",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"BAD_REQUEST\",\n  \"message\": \"Invalid coordinates format\"\n}")))
+    })
+    public ResponseEntity<ApiResponse<List<JobResponse>>> getNearbyJobs(
+            @Parameter(description = "Coordinates in WKT POINT format (e.g. POINT(lon lat))") @RequestParam String coordinates,
+            @Parameter(description = "Radius in kilometers to search within") @RequestParam(defaultValue = "10") double radiusKm,
+            @Parameter(description = "Optional subcategory UUID filter") @RequestParam(required = false) UUID subcategoryId
+    ) {
+        List<JobResponse> jobs = jobService.getNearbyJobs(coordinates, radiusKm, subcategoryId);
+        return ResponseEntity.ok(ApiResponse.<List<JobResponse>>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Nearby jobs retrieved successfully")
+                .data(jobs)
                 .build());
     }
 }
