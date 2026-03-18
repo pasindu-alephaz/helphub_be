@@ -2,11 +2,13 @@ package lk.helphub.api.domain.enums;
 
 public enum ResponseStatusCode {
     SUCCESS,
-    TWO_FA_REQUIRED,
+    PHONE_VERIFICATION_REQUIRED,
+    REGISTRATION_REQUIRED,
     UNAUTHORIZED,
     FORBIDDEN,
     NOT_FOUND,
     VALIDATION_ERROR,
     INTERNAL_SERVER_ERROR,
-    BAD_REQUEST
+    BAD_REQUEST,
+    TWO_FA_REQUIRED
 }
