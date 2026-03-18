@@ -1,5 +1,8 @@
 -- liquibase formatted sql
 
+-- changeset antigravity:15
+CREATE EXTENSION IF NOT EXISTS postgis;
+
 -- changeset antigravity:16
 CREATE TABLE IF NOT EXISTS "jobs" (
 	"id" UUID DEFAULT gen_random_uuid(),
@@ -7,7 +10,7 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"description" VARCHAR(500) NOT NULL,
 	"subcategory_id" UUID,
 	"location_address" TEXT NOT NULL,
-	"location_coordinates" POINT NOT NULL,
+	"location_coordinates" geometry(Point,4326) NOT NULL,
 	"price" DECIMAL(10,2),
 	"scheduled_at" TIMESTAMP,
 	"urgency_flag" VARCHAR(20),
@@ -32,7 +35,7 @@ CREATE TABLE IF NOT EXISTS "job_templates" (
     "description" VARCHAR(500) NOT NULL,
     "subcategory_id" UUID,
     "location_address" TEXT NOT NULL,
-    "location_coordinates" POINT NOT NULL,
+    "location_coordinates" geometry(Point,4326) NOT NULL,
     "price" DECIMAL(10, 2),
     "urgency_flag" VARCHAR(20),
     "user_id" UUID NOT NULL,
