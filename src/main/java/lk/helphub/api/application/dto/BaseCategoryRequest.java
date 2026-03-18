@@ -3,6 +3,7 @@ package lk.helphub.api.application.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,5 +29,16 @@ public abstract class BaseCategoryRequest {
     private String status = "active";
     @Builder.Default
     private Integer displayOrder = 0;
+    @Schema(description = "Optional icon image ID", example = "550e8400-e29b-41d4-a716-446655440000")
     private UUID iconId;
+
+    public void setIconId(Object iconId) {
+        if (iconId == null || (iconId instanceof String && ((String) iconId).trim().isEmpty())) {
+            this.iconId = null;
+        } else if (iconId instanceof String) {
+            this.iconId = UUID.fromString((String) iconId);
+        } else if (iconId instanceof UUID) {
+            this.iconId = (UUID) iconId;
+        }
+    }
 }
