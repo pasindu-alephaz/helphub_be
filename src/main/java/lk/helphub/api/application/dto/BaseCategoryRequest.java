@@ -1,5 +1,6 @@
 package lk.helphub.api.application.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,10 +13,17 @@ import java.util.UUID;
 @AllArgsConstructor
 @SuperBuilder
 public abstract class BaseCategoryRequest {
-    @Schema(description = "Multilingual names for the category", example = "{\"en\": \"Home Repairs\", \"si\": \"නිවාස අලුත්වැඩියාව\", \"ta\": \"வீட்டு பழுதுபார்த்தல்\"}")
+    @Schema(
+        description = "Name translations by language code (ISO 639-1: en=English, si=Sinhala, ta=Tamil)",
+        example = "{\"en\": \"Category Name EN\", \"si\": \"Category Name SI\", \"ta\": \"Category Name TA\"}",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private Map<String, String> name;
     
-    @Schema(description = "Multilingual descriptions for the category", example = "{\"en\": \"All types of home repair services\", \"si\": \"සියලුම වර්ගයේ නිවාස අලුත්වැඩියා සේවා\", \"ta\": \"அனைத்து வகை வீட்டு பழுதுபார்க்கும் சேவைகள்\"}")
+    @Schema(
+        description = "Description translations by language code (ISO 639-1: en=English, si=Sinhala, ta=Tamil)",
+        example = "{\"en\": \"Description EN\", \"si\": \"Description SI\", \"ta\": \"Description TA\"}"
+    )
     private Map<String, String> description;
     @Builder.Default
     private String status = "active";

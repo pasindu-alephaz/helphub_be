@@ -1,4 +1,4 @@
-package lk.helphub.api.presentation.controller;
+package lk.helphub.api.admin.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lk.helphub.api.application.services.RoleService;
+import lk.helphub.api.admin.application.services.RoleService;
 import lk.helphub.api.domain.entity.Role;
 import lk.helphub.api.domain.enums.ResponseStatusCode;
 import lk.helphub.api.presentation.dto.ApiResponse;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/v1/roles")
+@RequestMapping("/api/v1/admin/roles")
 @RequiredArgsConstructor
 @Tag(name = "Roles", description = "Role management APIs")
 public class RoleController {

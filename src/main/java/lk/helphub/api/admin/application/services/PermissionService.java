@@ -1,4 +1,4 @@
-package lk.helphub.api.application.services;
+package lk.helphub.api.admin.application.services;
 
 import lk.helphub.api.domain.entity.Permission;
 

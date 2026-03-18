@@ -1,4 +1,4 @@
-package lk.helphub.api.presentation.controller;
+package lk.helphub.api.admin.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lk.helphub.api.application.services.PermissionService;
+import lk.helphub.api.admin.application.services.PermissionService;
 import lk.helphub.api.domain.entity.Permission;
 import lk.helphub.api.domain.enums.ResponseStatusCode;
 import lk.helphub.api.presentation.dto.ApiResponse;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/permissions")
+@RequestMapping("/api/v1/admin/permissions")
 @RequiredArgsConstructor
 @Tag(name = "Permissions", description = "Permission management APIs (Read-Only)")
 public class PermissionController {
