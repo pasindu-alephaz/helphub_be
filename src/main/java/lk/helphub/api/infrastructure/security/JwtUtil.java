@@ -22,8 +22,8 @@ public class JwtUtil {
     @Value("${application.security.jwt.secret-key:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
     private String secretKey;
 
-    @Value("${application.security.jwt.expiration:86400000}")
-    private long jwtExpiration;
+    @Value("${application.security.jwt.access-token-expiration:900000}")
+    private long accessTokenExpiration;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -42,7 +42,7 @@ public class JwtUtil {
             Map<String, Object> extraClaims,
             UserDetails userDetails
     ) {
-        return buildToken(extraClaims, userDetails, jwtExpiration);
+        return buildToken(extraClaims, userDetails, accessTokenExpiration);
     }
 
     private String buildToken(

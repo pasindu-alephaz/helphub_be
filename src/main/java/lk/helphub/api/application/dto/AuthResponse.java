@@ -11,10 +11,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Response containing authentication token")
+@Schema(description = "Response containing authentication tokens")
 public class AuthResponse {
-    @Schema(description = "JWT authentication token", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
-    private String token;
+    @Schema(description = "Short-lived JWT access token", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+    private String accessToken;
+
+    @Schema(description = "Long-lived opaque refresh token used to obtain new access tokens")
+    private String refreshToken;
 
     @Schema(description = "Flag indicating if phone verification screen should be shown")
     private boolean phoneVerificationRequired;
