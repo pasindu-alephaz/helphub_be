@@ -13,7 +13,7 @@ All responses wrap data in a standard envelope:
 }
 ```
 
-> **Authentication:** Endpoints marked with 🔒 require a valid JWT token in the `Authorization: Bearer <token>` header. Endpoints marked with 🔑 additionally require specific role permissions.
+> **Authentication:** Endpoints marked with 🔒 require a valid access token (JWT) in the `Authorization: Bearer <accessToken>` header. Endpoints marked with 🔑 additionally require specific role permissions.
 
 ---
 
@@ -24,10 +24,12 @@ Base path: `/api/v1/auth`
 | Method | Endpoint | Auth | Summary |
 |--------|----------|------|---------|
 | `POST` | `/phone/init` | Public | Send OTP to phone number |
-| `POST` | `/phone/verify` | Public | Verify phone OTP and get JWT or registration token |
-| `POST` | `/phone/complete-registration` | Public | Create new user account after phone verification |
-| `POST` | `/google` | Public | Login with Google ID token |
-| `POST` | `/apple` | Public | Login with Apple ID token |
+| `POST` | `/phone/verify` | Public | Verify phone OTP and get access/refresh tokens |
+| `POST` | `/phone/complete-registration` | Public | Create user and get tokens |
+| `POST` | `/google` | Public | Login with Google |
+| `POST` | `/apple` | Public | Login with Apple |
+| `POST` | `/refresh` | Public | Refresh expired access token |
+| `POST` | `/logout` | 🔒 | Logout by revoking refresh token |
 
 ---
 
@@ -54,7 +56,7 @@ Sends a 6-digit verification code to the provided phone number.
 
 ### POST `/phone/verify`
 
-Verifies the OTP code. Returns a JWT if the user exists, otherwise returns a registration token.
+Verifies the OTP code. Returns `accessToken` and `refreshToken` if the user exists, otherwise returns a registration token.
 
 **Request Body**
 ```json
@@ -66,7 +68,7 @@ Verifies the OTP code. Returns a JWT if the user exists, otherwise returns a reg
 ```
 
 **Responses**
-- `200`: Verification successful. Returns `data.token` if user exists.
+- `200`: Verification successful. Returns `data.accessToken` and `data.refreshToken` if user exists.
 - `200`: Registration required. Returns `data.registrationRequired: true` and `data.pendingToken`.
 - `400`: Invalid or expired OTP.
 
@@ -91,18 +93,40 @@ Creates a new user profile.
 
 ### POST `/google` / `/apple`
 
-Authenticates with a social provider token.
+Authenticates with a social provider token. Returns `phoneVerificationRequired: true` and a `pendingToken`.
+
+---
+
+### POST `/refresh`
+
+Returns a new, short-lived `accessToken` given a valid `refreshToken`.
 
 **Request Body**
 ```json
 {
-  "token": "ID_TOKEN_FROM_VENDOR"
+  "refreshToken": "YOUR_STORED_REFRESH_TOKEN"
 }
 ```
 
 **Responses**
-- `200`: Success. Returns `data.phoneVerificationRequired: true` and `data.pendingToken`.
-- `400`: Invalid token.
+- `200`: Success. Returns new `accessToken` and same `refreshToken`.
+- `401`: Unauthorized. Refresh token expired or revoked.
+
+---
+
+### POST `/logout`
+
+🔒 Revokes the provided `refreshToken`, effectively logging the user out from that specific session/device.
+
+**Request Body**
+```json
+{
+  "refreshToken": "YOUR_STORED_REFRESH_TOKEN"
+}
+```
+
+**Responses**
+- `200`: Successfully logged out.
 
 ---
 
@@ -125,7 +149,7 @@ Authenticates an admin. Returns `TWO_FA_REQUIRED` if credentials are valid.
 
 ### POST `/admin/auth/verify-2fa`
 
-Verifies the 2FA code sent to the admin's email. Returns a JWT on success.
+Verifies the 2FA code sent to the admin's email. Returns `accessToken` and `refreshToken` on success.
 
 ---
 

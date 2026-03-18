@@ -2,6 +2,7 @@ package lk.helphub.api.application.services;
 
 import lk.helphub.api.application.dto.*;
 import lk.helphub.api.domain.entity.PhoneOtp;
+import lk.helphub.api.domain.entity.RefreshToken;
 import lk.helphub.api.domain.entity.Role;
 import lk.helphub.api.domain.entity.User;
 import lk.helphub.api.domain.enums.PhoneOtpPurpose;
@@ -35,6 +36,7 @@ public class AuthService {
     private final PhoneOtpRepository phoneOtpRepository;
     private final SmsService smsService;
     private final SocialAuthService socialAuthService;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public AuthResponse sendPhoneOtp(PhoneInitRequest request) {
@@ -215,14 +217,17 @@ public class AuthService {
 
     private AuthResponse generateAuthResponse(User user) {
         // We use email as the identifier for UserDetails if present, otherwise phone number
-        String identifier = (user.getEmail() != null && !user.getEmail().isBlank()) 
-                ? user.getEmail() 
+        String identifier = (user.getEmail() != null && !user.getEmail().isBlank())
+                ? user.getEmail()
                 : user.getPhoneNumber();
-        
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(identifier);
-        var jwtToken = jwtUtil.generateToken(userDetails);
+        String accessToken = jwtUtil.generateToken(userDetails);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
         return AuthResponse.builder()
-                .token(jwtToken)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken.getToken())
                 .build();
     }
 }
