@@ -1,13 +1,16 @@
 package lk.helphub.api.domain.entity;
 
 import jakarta.persistence.*;
+import lk.helphub.api.domain.enums.IdentityType;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,6 +47,19 @@ public class User {
 
     @Column(columnDefinition = "TEXT")
     private String bio;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "identity_type", length = 20)
+    private IdentityType identityType;
+
+    @Column(name = "identity_value", length = 100)
+    private String identityValue;
+
+    @Column(name = "language_preference", length = 20)
+    private String languagePreference = "SINHALA";
+
+    @Column(name = "delete_reason", columnDefinition = "TEXT")
+    private String deleteReason;
 
     @Column(name = "avatar_id")
     private UUID avatarId;
@@ -94,6 +110,14 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserAddress> addresses = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserLanguage> userLanguages = new ArrayList<>();
 
     public Set<Role> getRoles() {
         if (roles == null) {

@@ -35,11 +35,16 @@ public class DatabaseInitializer implements BeanFactoryPostProcessor, Environmen
             return;
         }
 
-        // Extract database name from JDBC URL (e.g., jdbc:postgresql://localhost:5432/helphub)
-        String databaseName = url.substring(url.lastIndexOf("/") + 1);
+        // Extract database name from JDBC URL (e.g., jdbc:postgresql://localhost:5432/helphub?useUnicode=true)
+        int slashIndex = url.lastIndexOf("/");
+        int questionIndex = url.indexOf("?", slashIndex);
+        String databaseName = (questionIndex == -1) 
+                ? url.substring(slashIndex + 1) 
+                : url.substring(slashIndex + 1, questionIndex);
 
         // Build URL pointing to the default 'postgres' database
-        String defaultUrl = url.substring(0, url.lastIndexOf("/") + 1) + "postgres";
+        String queryParams = (questionIndex == -1) ? "" : url.substring(questionIndex);
+        String defaultUrl = url.substring(0, slashIndex + 1) + "postgres" + queryParams;
 
         try (Connection connection = DriverManager.getConnection(defaultUrl, username, password);
              Statement statement = connection.createStatement()) {
