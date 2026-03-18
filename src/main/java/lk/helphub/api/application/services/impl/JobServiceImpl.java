@@ -18,10 +18,15 @@ import lk.helphub.api.domain.repository.ServiceCategoryRepository;
 import lk.helphub.api.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.util.StringUtils;
+import jakarta.persistence.criteria.Predicate;
+import java.math.BigDecimal;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,6 +37,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.ParseException;
 
 @Slf4j
 @Service
@@ -64,7 +72,7 @@ public class JobServiceImpl implements JobService {
                 .description(request.getDescription())
                 .subcategory(subcategory)
                 .locationAddress(request.getLocationAddress())
-                .locationCoordinates(request.getLocationCoordinates())
+                .locationCoordinates(parseLocation(request.getLocationCoordinates()))
                 .price(request.getPrice())
                 .scheduledAt(request.getScheduledAt())
                 .urgencyFlag(request.getUrgencyFlag())
@@ -155,7 +163,7 @@ public class JobServiceImpl implements JobService {
                 .description(request.getDescription())
                 .subcategory(subcategory)
                 .locationAddress(request.getLocationAddress())
-                .locationCoordinates(request.getLocationCoordinates())
+                .locationCoordinates(parseLocation(request.getLocationCoordinates()))
                 .price(request.getPrice())
                 .urgencyFlag(request.getUrgencyFlag())
                 .user(user)
@@ -163,6 +171,65 @@ public class JobServiceImpl implements JobService {
 
         JobTemplate savedTemplate = jobTemplateRepository.save(template);
         return mapToJobTemplateResponse(savedTemplate);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<JobResponse> getJobs(Pageable pageable, UUID subcategoryId, String status, String urgencyFlag, BigDecimal minPrice, BigDecimal maxPrice, String locationCity, String jobType) {
+        Specification<Job> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.isNull(root.get("deletedAt")));
+
+            if (subcategoryId != null) {
+                predicates.add(cb.equal(root.get("subcategory").get("id"), subcategoryId));
+            }
+            if (status != null && !status.trim().isEmpty()) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+            if (urgencyFlag != null && !urgencyFlag.trim().isEmpty()) {
+                predicates.add(cb.equal(root.get("urgencyFlag"), urgencyFlag));
+            }
+            if (minPrice != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), minPrice));
+            }
+            if (maxPrice != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+            }
+            if (locationCity != null && !locationCity.trim().isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("locationAddress")), "%" + locationCity.toLowerCase() + "%"));
+            }
+            // If there's a jobType field, uncomment below when entity supports it (currently not in Job entity)
+            // if (jobType != null && !jobType.trim().isEmpty()) {
+            //     predicates.add(cb.equal(root.get("jobType"), jobType));
+            // }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return jobRepository.findAll(spec, pageable).map(this::mapToJobResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JobResponse getJobById(UUID id) {
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + id));
+        if (job.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("Job not found with id: " + id);
+        }
+        return mapToJobResponse(job);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<JobResponse> getNearbyJobs(String coordinates, double radiusKm, UUID subcategoryId) {
+        Point point = parseLocation(coordinates);
+        if (point == null) {
+            throw new IllegalArgumentException("Coordinates must be provided");
+        }
+        double radiusInDegrees = radiusKm / 111.32;
+        List<Job> nearbyJobs = jobRepository.findNearbyJobs(point, radiusInDegrees, subcategoryId);
+        return nearbyJobs.stream().map(this::mapToJobResponse).collect(Collectors.toList());
     }
 
     private JobResponse mapToJobResponse(Job job) {
@@ -177,7 +244,7 @@ public class JobServiceImpl implements JobService {
                 .description(job.getDescription())
                 .subcategoryId(job.getSubcategory() != null ? job.getSubcategory().getId() : null)
                 .locationAddress(job.getLocationAddress())
-                .locationCoordinates(job.getLocationCoordinates())
+                .locationCoordinates(job.getLocationCoordinates() != null ? job.getLocationCoordinates().toText() : null)
                 .price(job.getPrice())
                 .scheduledAt(job.getScheduledAt())
                 .urgencyFlag(job.getUrgencyFlag())
@@ -198,12 +265,23 @@ public class JobServiceImpl implements JobService {
                 .description(template.getDescription())
                 .subcategoryId(template.getSubcategory() != null ? template.getSubcategory().getId() : null)
                 .locationAddress(template.getLocationAddress())
-                .locationCoordinates(template.getLocationCoordinates())
+                .locationCoordinates(template.getLocationCoordinates() != null ? template.getLocationCoordinates().toText() : null)
                 .price(template.getPrice())
                 .urgencyFlag(template.getUrgencyFlag())
                 .userId(template.getUser() != null ? template.getUser().getId() : null)
                 .createdAt(template.getCreatedAt())
                 .updatedAt(template.getUpdatedAt())
                 .build();
+    }
+
+    private Point parseLocation(String coordinates) {
+        if (coordinates == null || coordinates.trim().isEmpty()) return null;
+        try {
+            Point point = (Point) new WKTReader().read(coordinates);
+            point.setSRID(4326);
+            return point;
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Invalid coordinates format. Expected WKT format like POINT(lon lat)", e);
+        }
     }
 }
