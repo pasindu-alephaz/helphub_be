@@ -13,7 +13,7 @@ All responses wrap data in a standard envelope:
 }
 ```
 
-> **Authentication:** Endpoints marked with 🔒 require a valid JWT token in the `Authorization: Bearer <token>` header. Endpoints marked with 🔑 additionally require specific role permissions.
+> **Authentication:** Endpoints marked with 🔒 require a valid access token (JWT) in the `Authorization: Bearer <accessToken>` header. Endpoints marked with 🔑 additionally require specific role permissions.
 
 ---
 
@@ -23,119 +23,133 @@ Base path: `/api/v1/auth`
 
 | Method | Endpoint | Auth | Summary |
 |--------|----------|------|---------|
-| `POST` | `/register` | Public | Register a new user |
-| `POST` | `/login` | Public | Log in and get a JWT token |
-| `POST` | `/verify-2fa` | Public | Verify 2FA OTP to complete login |
-| `POST` | `/forgot-password` | Public | Send password-reset OTP to email |
-| `POST` | `/reset-password` | Public | Reset password using OTP |
+| `POST` | `/phone/init` | Public | Send OTP to phone number |
+| `POST` | `/phone/verify` | Public | Verify phone OTP and get access/refresh tokens |
+| `POST` | `/phone/complete-registration` | Public | Create user and get tokens |
+| `POST` | `/google` | Public | Login with Google |
+| `POST` | `/apple` | Public | Login with Apple |
+| `POST` | `/refresh` | Public | Refresh expired access token |
+| `POST` | `/logout` | 🔒 | Logout by revoking refresh token |
 
 ---
 
-### POST `/register`
+### POST `/phone/init`
 
-Registers a new user.
+Sends a 6-digit verification code to the provided phone number.
 
 **Request Body**
 ```json
 {
-  "name": "string",
-  "email": "string",
-  "password": "string"
+  "phoneNumber": "+94771234567",
+  "pendingToken": "string (optional)"
 }
 ```
 
-**Responses**
+**Parameters**
+- `phoneNumber`: The user's mobile number in E.164 format.
+- `pendingToken`: (Optional) The UUID returned by the `/google` or `/apple` endpoints. Provide this to link the phone verification to a social login identity. If omitted, the request is treated as a standard phone-only login/register.
 
-| Code | Description |
-|------|-------------|
-| `200` | User registered successfully |
-| `400` | Validation error in request body |
-| `409` | Email already exists |
+**Responses**
+- `200`: OTP sent successfully.
 
 ---
 
-### POST `/login`
+### POST `/phone/verify`
 
-Authenticates a user and returns a JWT token. If 2FA is enabled, the token is withheld until OTP verification.
+Verifies the OTP code. Returns `accessToken` and `refreshToken` if the user exists, otherwise returns a registration token.
 
 **Request Body**
 ```json
 {
-  "email": "string",
-  "password": "string"
+  "phoneNumber": "+94771234567",
+  "otp": "123456",
+  "pendingToken": "string (optional)"
 }
 ```
 
 **Responses**
-
-| Code | Description |
-|------|-------------|
-| `200` | Login successful. `data.token` contains the JWT. If `data.twoFactorRequired` is `true`, an OTP was sent to email. |
-| `400` | Invalid request body |
-| `401` | Invalid credentials |
+- `200`: Verification successful. Returns `data.accessToken` and `data.refreshToken` if user exists.
+- `200`: Registration required. Returns `data.registrationRequired: true` and `data.pendingToken`.
+- `400`: Invalid or expired OTP.
 
 ---
 
-### POST `/verify-2fa`
+### POST `/phone/complete-registration`
 
-Completes the 2FA flow. Returns a JWT on success.
+Creates a new user profile.
 
 **Request Body**
 ```json
 {
-  "token": "string",
-  "otp": "string"
+  "pendingToken": "UUID_FROM_VERIFY_STEP",
+  "firstName": "John",
+  "lastName": "Doe",
+  "dateOfBirth": "1995-05-15",
+  "email": "john@example.com (optional)"
 }
 ```
 
-**Responses**
+---
 
-| Code | Description |
-|------|-------------|
-| `200` | 2FA verified — `data.token` contains the JWT |
-| `400` | Invalid or expired OTP |
+### POST `/google` / `/apple`
+
+Authenticates with a social provider token. Returns `phoneVerificationRequired: true` and a `pendingToken`.
 
 ---
 
-### POST `/forgot-password`
+### POST `/refresh`
 
-Sends a password-reset OTP to the user's email.
+Returns a new, short-lived `accessToken` given a valid `refreshToken`.
 
 **Request Body**
 ```json
 {
-  "email": "string"
+  "refreshToken": "YOUR_STORED_REFRESH_TOKEN"
 }
 ```
 
 **Responses**
-
-| Code | Description |
-|------|-------------|
-| `200` | OTP sent successfully |
-| `400` | User not found or invalid request |
+- `200`: Success. Returns new `accessToken` and same `refreshToken`.
+- `401`: Unauthorized. Refresh token expired or revoked.
 
 ---
 
-### POST `/reset-password`
+### POST `/logout`
 
-Resets the password using the OTP received by email.
+🔒 Revokes the provided `refreshToken`, effectively logging the user out from that specific session/device.
 
 **Request Body**
 ```json
 {
-  "email": "string",
-  "otp": "string",
-  "newPassword": "string"
+  "refreshToken": "YOUR_STORED_REFRESH_TOKEN"
 }
 ```
 
 **Responses**
+- `200`: Successfully logged out.
 
-| Code | Description |
-|------|-------------|
-| `200` | Password reset successfully |
-| `400` | Invalid/expired OTP or invalid new password |
+---
+
+## 2. Admin Authentication
+
+Base path: `/api/v1/admin/auth`
+
+| Method | Endpoint | Auth | Summary |
+|--------|----------|------|---------|
+| `POST` | `/login` | Public | Admin login with email/password |
+| `POST` | `/verify-2fa` | Public | Verify admin email 2FA |
+
+---
+
+### POST `/admin/auth/login`
+
+Authenticates an admin. Returns `TWO_FA_REQUIRED` if credentials are valid.
+
+---
+
+### POST `/admin/auth/verify-2fa`
+
+Verifies the 2FA code sent to the admin's email. Returns `accessToken` and `refreshToken` on success.
 
 ---
 
@@ -505,3 +519,15 @@ Common status codes:
 | `FORBIDDEN` | JWT valid but insufficient permissions |
 | `NOT_FOUND` | Resource not found |
 | `TWO_FA_REQUIRED` | Login successful but 2FA OTP required |
+
+---
+
+## Configuration
+
+Some backend behaviors can be controlled via `application.properties` or environment variables:
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `textit.sms.enabled` | `false` | If `true`, actual SMS messages are sent via Textit.biz. If `false`, messages are only logged to the console. |
+| `textit.api-key` | `YOUR_API_KEY_HERE` | Basic Auth key for Textit.biz API. |
+| `app.rate-limit.otp-send.requests-per-minute` | `5` | Maximum OTP initiation requests per minute per phone number. |

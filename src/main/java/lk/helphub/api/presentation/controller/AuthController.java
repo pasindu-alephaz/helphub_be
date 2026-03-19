@@ -1,27 +1,25 @@
 package lk.helphub.api.presentation.controller;
 
-import lk.helphub.api.application.services.AuthService;
-import jakarta.validation.Valid;
-import lk.helphub.api.application.dto.AuthResponse;
-import lk.helphub.api.application.dto.LoginRequest;
-import lk.helphub.api.application.dto.RegisterRequest;
-import lk.helphub.api.application.dto.VerifyOtpRequest;
+import lk.helphub.api.application.dto.*;
+import lk.helphub.api.application.services.RefreshTokenService;
+import lk.helphub.api.domain.entity.RefreshToken;
 import lk.helphub.api.domain.enums.ResponseStatusCode;
 import lk.helphub.api.presentation.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lk.helphub.api.application.services.AuthService;
 import lk.helphub.api.application.services.SocialAuthService;
+import lk.helphub.api.infrastructure.security.JwtUtil;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -31,107 +29,113 @@ public class AuthController {
 
     private final AuthService authService;
     private final SocialAuthService socialAuthService;
+    private final RefreshTokenService refreshTokenService;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
 
-    @PostMapping("/register")
-    @Operation(summary = "Register user", description = "Registers a new user in the system")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User registered successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body or validation errors",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
-                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"VALIDATION_ERROR\",\n  \"message\": \"Validation failed\",\n  \"errors\": {\n    \"email\": [\"must be a well-formed email address\"]\n  }\n}"))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Email already exists",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
-                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"BAD_REQUEST\",\n  \"message\": \"User with this email already exists\"\n}")))
-    })
-    public ResponseEntity<ApiResponse<AuthResponse>> register(
-            @Valid @RequestBody RegisterRequest request
-    ) {
-        AuthResponse response = authService.register(request);
+    @PostMapping("/phone/init")
+    @Operation(summary = "Initiate phone authentication", description = "Sends an OTP to the provided phone number")
+    public ResponseEntity<ApiResponse<AuthResponse>> sendPhoneOtp(@Valid @RequestBody PhoneInitRequest request) {
+        AuthResponse response = authService.sendPhoneOtp(request);
         return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
-                .message("User registered successfully")
+                .message("OTP sent successfully")
                 .data(response)
                 .build());
     }
 
-    @PostMapping("/login")
-    @Operation(summary = "Login user", description = "Authenticates a user and returns a JWT token")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User logged in successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
-                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"UNAUTHORIZED\",\n  \"message\": \"Invalid email or password\"\n}"))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
-                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"VALIDATION_ERROR\",\n  \"message\": \"Validation failed\",\n  \"errors\": {\n    \"email\": [\"must be a well-formed email address\"]\n  }\n}")))
-    })
-    public ResponseEntity<ApiResponse<AuthResponse>> login(
-            @RequestBody LoginRequest request
-    ) {
-        AuthResponse response = authService.login(request);
-        String message = response.isTwoFactorRequired()
-                ? "OTP sent to your email. Please verify to continue."
-                : "User logged in successfully";
+    @PostMapping("/phone/verify")
+    @Operation(summary = "Verify phone OTP", description = "Verifies the OTP and returns tokens or a registration token")
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyPhoneOtp(@Valid @RequestBody PhoneOtpVerifyRequest request) {
+        AuthResponse response = authService.verifyPhoneOtp(request);
+        ResponseStatusCode statusCode = response.isRegistrationRequired()
+                ? ResponseStatusCode.REGISTRATION_REQUIRED
+                : ResponseStatusCode.SUCCESS;
+
+        String message = response.isRegistrationRequired()
+                ? "Registration required"
+                : "Verification successful";
 
         return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
                 .status(true)
-                .statusCode(response.isTwoFactorRequired() ? ResponseStatusCode.TWO_FA_REQUIRED : ResponseStatusCode.SUCCESS)
+                .statusCode(statusCode)
                 .message(message)
                 .data(response)
                 .build());
     }
 
-    @PostMapping("/verify-2fa")
-    public ResponseEntity<ApiResponse<AuthResponse>> verify2fa(
-            @Valid @RequestBody VerifyOtpRequest request
-    ) {
-        AuthResponse response = authService.verify2fa(request);
+    @PostMapping("/phone/complete-registration")
+    @Operation(summary = "Complete user registration", description = "Creates a new user account after phone verification")
+    public ResponseEntity<ApiResponse<AuthResponse>> completeRegistration(@Valid @RequestBody CompleteRegistrationRequest request) {
+        AuthResponse response = authService.completeRegistration(request);
         return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
-                .message("2FA verified successfully")
+                .message("Registration completed successfully")
                 .data(response)
                 .build());
     }
 
     @PostMapping("/google")
     @Operation(summary = "Login with Google", description = "Authenticates a user using a Google ID token")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User logged in successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid token or request body",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
-                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"BAD_REQUEST\",\n  \"message\": \"Invalid token\"\n}")))
-    })
     public ResponseEntity<ApiResponse<AuthResponse>> loginWithGoogle(
-            @Valid @RequestBody lk.helphub.api.application.dto.SocialAuthRequest request
+            @Valid @RequestBody SocialAuthRequest request
     ) {
         AuthResponse response = socialAuthService.loginWithGoogle(request);
         return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
                 .status(true)
-                .statusCode(ResponseStatusCode.SUCCESS)
-                .message("Google login successful")
+                .statusCode(ResponseStatusCode.PHONE_VERIFICATION_REQUIRED)
+                .message("Social login successful, phone verification required")
                 .data(response)
                 .build());
     }
 
     @PostMapping("/apple")
     @Operation(summary = "Login with Apple", description = "Authenticates a user using an Apple ID token")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User logged in successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid token or request body",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
-                examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"BAD_REQUEST\",\n  \"message\": \"Invalid token\"\n}")))
-    })
     public ResponseEntity<ApiResponse<AuthResponse>> loginWithApple(
-            @Valid @RequestBody lk.helphub.api.application.dto.SocialAuthRequest request
+            @Valid @RequestBody SocialAuthRequest request
     ) {
         AuthResponse response = socialAuthService.loginWithApple(request);
         return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
                 .status(true)
-                .statusCode(ResponseStatusCode.SUCCESS)
-                .message("Apple login successful")
+                .statusCode(ResponseStatusCode.PHONE_VERIFICATION_REQUIRED)
+                .message("Social login successful, phone verification required")
                 .data(response)
+                .build());
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "Refresh access token", description = "Returns a new short-lived access token given a valid refresh token")
+    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
+        RefreshToken refreshToken = refreshTokenService.validateRefreshToken(request.getRefreshToken());
+        String identifier = refreshToken.getUser().getEmail() != null && !refreshToken.getUser().getEmail().isBlank()
+                ? refreshToken.getUser().getEmail()
+                : refreshToken.getUser().getPhoneNumber();
+        UserDetails userDetails = userDetailsService.loadUserByUsername(identifier);
+        String newAccessToken = jwtUtil.generateToken(userDetails);
+
+        AuthResponse response = AuthResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(refreshToken.getToken()) // keep the same refresh token
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Token refreshed successfully")
+                .data(response)
+                .build());
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Logout", description = "Revokes the provided refresh token, logging the user out from that session")
+    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody TokenRefreshRequest request) {
+        refreshTokenService.revokeToken(request.getRefreshToken());
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Logged out successfully")
                 .build());
     }
 }

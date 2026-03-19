@@ -1,9 +1,11 @@
 package lk.helphub.api.admin.application.services;
 import lk.helphub.api.application.services.MailService;
+import lk.helphub.api.application.services.RefreshTokenService;
 import lk.helphub.api.application.dto.AuthResponse;
 import lk.helphub.api.application.dto.LoginRequest;
 import lk.helphub.api.application.dto.VerifyOtpRequest;
 import lk.helphub.api.domain.entity.LoginOtp;
+import lk.helphub.api.domain.entity.RefreshToken;
 import lk.helphub.api.domain.entity.Role;
 import lk.helphub.api.domain.entity.User;
 import lk.helphub.api.domain.repository.LoginOtpRepository;
@@ -38,6 +40,7 @@ public class AdminAuthService {
     private final UserDetailsService userDetailsService;
     private final LoginOtpRepository loginOtpRepository;
     private final MailService mailService;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public AuthResponse loginAdmin(LoginRequest request) {
@@ -83,10 +86,11 @@ public class AdminAuthService {
             return AuthResponse.builder().twoFactorRequired(true).build();
         }
 
-        // 2FA not enabled — return JWT immediately
+        // 2FA not enabled — return tokens immediately
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-        var jwtToken = jwtUtil.generateToken(userDetails);
-        return AuthResponse.builder().token(jwtToken).build();
+        String accessToken = jwtUtil.generateToken(userDetails);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+        return AuthResponse.builder().accessToken(accessToken).refreshToken(refreshToken.getToken()).build();
     }
 
     @Transactional
@@ -113,8 +117,9 @@ public class AdminAuthService {
         loginOtpRepository.save(loginOtp);
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-        var jwtToken = jwtUtil.generateToken(userDetails);
-        return AuthResponse.builder().token(jwtToken).build();
+        String accessToken = jwtUtil.generateToken(userDetails);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+        return AuthResponse.builder().accessToken(accessToken).refreshToken(refreshToken.getToken()).build();
     }
 
     /**
