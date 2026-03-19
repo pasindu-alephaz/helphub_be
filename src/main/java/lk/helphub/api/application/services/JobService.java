@@ -4,6 +4,7 @@ import lk.helphub.api.application.dto.JobCreateRequest;
 import lk.helphub.api.application.dto.JobResponse;
 import lk.helphub.api.application.dto.JobTemplateCreateRequest;
 import lk.helphub.api.application.dto.JobTemplateResponse;
+import lk.helphub.api.application.dto.JobUpdateRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.data.domain.Page;
@@ -26,4 +27,13 @@ public interface JobService {
     JobResponse getJobById(UUID id);
 
     List<JobResponse> getNearbyJobs(String coordinates, double radiusKm, UUID subcategoryId);
+
+    // User's own jobs management
+    Page<JobResponse> getMyPostedJobs(String userEmail, Pageable pageable, String status);
+
+    Page<JobResponse> getAcceptedJobs(String userEmail, Pageable pageable, String status);
+
+    JobResponse updateJob(UUID jobId, String userEmail, JobUpdateRequest request);
+
+    void deleteJob(UUID jobId, String userEmail);
 }

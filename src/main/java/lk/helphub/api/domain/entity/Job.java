@@ -47,6 +47,12 @@ public class Job {
     @Column(name = "scheduled_at")
     private LocalDateTime scheduledAt;
 
+    @Column(name = "job_type", length = 20)
+    private String jobType;
+
+    @Column(name = "preferred_price", precision = 10, scale = 2)
+    private BigDecimal preferredPrice;
+
     @Column(name = "urgency_flag", length = 20)
     private String urgencyFlag;
 

@@ -9,7 +9,10 @@ import org.springframework.stereotype.Repository;
 import org.locationtech.jts.geom.Point;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface JobRepository extends JpaRepository<Job, UUID>, JpaSpecificationExecutor<Job> {
@@ -20,4 +23,15 @@ public interface JobRepository extends JpaRepository<Job, UUID>, JpaSpecificatio
     List<Job> findNearbyJobs(@Param("point") Point point,
                              @Param("radiusInDegrees") double radiusInDegrees,
                              @Param("subcategoryId") UUID subcategoryId);
+
+    // Methods for user's own jobs management
+    Page<Job> findByPostedByEmailAndDeletedAtIsNull(String email, Pageable pageable);
+
+    Page<Job> findByPostedByEmailAndStatusAndDeletedAtIsNull(String email, String status, Pageable pageable);
+
+    Page<Job> findByAcceptedByEmailAndDeletedAtIsNull(String email, Pageable pageable);
+
+    Page<Job> findByAcceptedByEmailAndStatusAndDeletedAtIsNull(String email, String status, Pageable pageable);
+
+    Optional<Job> findByIdAndPostedByEmail(UUID id, String email);
 }

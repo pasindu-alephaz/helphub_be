@@ -41,6 +41,12 @@ public class JobResponse {
     @Schema(description = "Scheduled date and time", example = "2024-12-01T14:30:00")
     private LocalDateTime scheduledAt;
 
+    @Schema(description = "Type of job: FIXED or BIDDING")
+    private String jobType;
+
+    @Schema(description = "Preferred price for the job")
+    private BigDecimal preferredPrice;
+
     @Schema(description = "Urgency flag", example = "Urgent")
     private String urgencyFlag;
 

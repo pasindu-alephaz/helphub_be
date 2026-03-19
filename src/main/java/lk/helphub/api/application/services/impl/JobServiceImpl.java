@@ -4,6 +4,7 @@ import lk.helphub.api.application.dto.JobCreateRequest;
 import lk.helphub.api.application.dto.JobResponse;
 import lk.helphub.api.application.dto.JobTemplateCreateRequest;
 import lk.helphub.api.application.dto.JobTemplateResponse;
+import lk.helphub.api.application.dto.JobUpdateRequest;
 import lk.helphub.api.application.services.JobService;
 import lk.helphub.api.domain.entity.Image;
 import lk.helphub.api.domain.entity.Job;
@@ -33,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -232,6 +234,93 @@ public class JobServiceImpl implements JobService {
         return nearbyJobs.stream().map(this::mapToJobResponse).collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<JobResponse> getMyPostedJobs(String userEmail, Pageable pageable, String status) {
+        Page<Job> jobs;
+        if (status != null && !status.trim().isEmpty()) {
+            jobs = jobRepository.findByPostedByEmailAndStatusAndDeletedAtIsNull(userEmail, status, pageable);
+        } else {
+            jobs = jobRepository.findByPostedByEmailAndDeletedAtIsNull(userEmail, pageable);
+        }
+        return jobs.map(this::mapToJobResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<JobResponse> getAcceptedJobs(String userEmail, Pageable pageable, String status) {
+        Page<Job> jobs;
+        if (status != null && !status.trim().isEmpty()) {
+            jobs = jobRepository.findByAcceptedByEmailAndStatusAndDeletedAtIsNull(userEmail, status, pageable);
+        } else {
+            jobs = jobRepository.findByAcceptedByEmailAndDeletedAtIsNull(userEmail, pageable);
+        }
+        return jobs.map(this::mapToJobResponse);
+    }
+
+    @Override
+    public JobResponse updateJob(UUID jobId, String userEmail, JobUpdateRequest request) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("Job not found with id: " + jobId);
+        }
+
+        // Verify the user is the job poster
+        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to update this job");
+        }
+
+        // Only allow updates when job is still OPEN
+        if (!"OPEN".equals(job.getStatus())) {
+            throw new RuntimeException("Cannot update job that is not in OPEN status");
+        }
+
+        // Update fields if provided
+        if (request.getJobType() != null) {
+            job.setJobType(request.getJobType());
+        }
+        if (request.getPreferredPrice() != null) {
+            job.setPreferredPrice(request.getPreferredPrice());
+        }
+        if (request.getJobDate() != null || request.getJobTime() != null) {
+            LocalDateTime scheduledAt = job.getScheduledAt();
+            if (scheduledAt == null) {
+                scheduledAt = LocalDateTime.now();
+            }
+            if (request.getJobDate() != null) {
+                scheduledAt = scheduledAt.with(request.getJobDate());
+            }
+            if (request.getJobTime() != null) {
+                scheduledAt = scheduledAt.with(request.getJobTime());
+            }
+            job.setScheduledAt(scheduledAt);
+        }
+
+        Job savedJob = jobRepository.save(job);
+        return mapToJobResponse(savedJob);
+    }
+
+    @Override
+    public void deleteJob(UUID jobId, String userEmail) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getDeletedAt() != null) {
+            throw new RuntimeException("Job is already deleted");
+        }
+
+        // Verify the user is the job poster
+        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to delete this job");
+        }
+
+        // Soft delete - set deletedAt timestamp
+        job.setDeletedAt(LocalDateTime.now());
+        jobRepository.save(job);
+    }
+
     private JobResponse mapToJobResponse(Job job) {
         List<String> imageUrls = new ArrayList<>();
         if (job.getImages() != null) {
@@ -247,6 +336,8 @@ public class JobServiceImpl implements JobService {
                 .locationCoordinates(job.getLocationCoordinates() != null ? job.getLocationCoordinates().toText() : null)
                 .price(job.getPrice())
                 .scheduledAt(job.getScheduledAt())
+                .jobType(job.getJobType())
+                .preferredPrice(job.getPreferredPrice())
                 .urgencyFlag(job.getUrgencyFlag())
                 .status(job.getStatus())
                 .postedBy(job.getPostedBy() != null ? job.getPostedBy().getId() : null)
