@@ -1,7 +1,8 @@
 -- liquibase formatted sql
 
 -- changeset antigravity:31
-CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS postgis SCHEMA extensions;
 
 -- changeset antigravity:32
 CREATE TABLE IF NOT EXISTS "jobs" (

@@ -1,0 +1,15 @@
+target/
+*.jar
+.git/
+.mvn/
+mvnw
+mvnw.cmd
+.vscode/
+.idea/
+.trunk/
+.agents/
+.kilocode/
+*.log
+*.txt
+build/
+bin/

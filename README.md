@@ -26,6 +26,28 @@ This project is the backend service for HelpHub, built with **Spring Boot 3.5.11
     ./mvnw spring-boot:run
     ```
 
+### Docker Setup
+You can also run the application and its database using Docker.
+
+1.  **Prerequisites**: Ensure you have Docker and Docker Compose installed.
+2.  **Options to Run**:
+    - **Develop Mode (with Watch)**: Recommended for development! Automatically rebuilds when you change files.
+      ```bash
+      docker compose up --build --watch
+      ```
+    - **Standard Run**:
+      ```bash
+      docker compose up --build --watch
+      ```
+3.  **Access the application**:
+    - Backend API: [http://localhost:8080](http://localhost:8080)
+    - Swagger UI: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+    - PostgreSQL: `localhost:5433` (Dockerized) | `localhost:5432` (Local)
+      (Database credentials: `postgres` / `root`)
+
+> [!NOTE]
+> The external port for the Docker database is set to **5433** to avoid conflicts with your local PostgreSQL (running on 5432).
+
 ## Development Features
 
 ### Hot Reloading (DevTools)
