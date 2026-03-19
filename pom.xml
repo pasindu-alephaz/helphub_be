@@ -171,6 +171,11 @@
 					<username>postgres</username>
 					<password>root</password>
 					<driver>org.postgresql.Driver</driver>
+					<dropExtensions>
+						<dropExtension>
+							<extensionName>postgis</extensionName>
+						</dropExtension>
+					</dropExtensions>
 				</configuration>
 				<dependencies>
 					<dependency>

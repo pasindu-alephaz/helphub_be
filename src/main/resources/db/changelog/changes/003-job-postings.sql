@@ -1,9 +1,9 @@
 -- liquibase formatted sql
 
--- changeset antigravity:15
+-- changeset antigravity:31
 CREATE EXTENSION IF NOT EXISTS postgis;
 
--- changeset antigravity:16
+-- changeset antigravity:32
 CREATE TABLE IF NOT EXISTS "jobs" (
 	"id" UUID DEFAULT gen_random_uuid(),
 	"title" VARCHAR(100) NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 );
 
 
--- changeset antigravity:17
+-- changeset antigravity:33
 CREATE TABLE IF NOT EXISTS "job_templates" (
     "id" UUID DEFAULT gen_random_uuid(),
     "template_name" VARCHAR(100) NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS "job_templates" (
     CONSTRAINT fk_job_template_subcategory FOREIGN KEY("subcategory_id") REFERENCES "service_categories"("id")
 );
 
--- changeset antigravity:18
+-- changeset antigravity:34
 CREATE TABLE IF NOT EXISTS "job_images" (
     "job_id" UUID NOT NULL,
     "image_id" UUID NOT NULL,
