@@ -1,9 +1,9 @@
 -- liquibase formatted sql
 
--- changeset antigravity:11
+-- changeset antigravity:21
 ALTER TABLE "images" ALTER COLUMN "user_id" DROP NOT NULL;
 
--- changeset antigravity:12
+-- changeset antigravity:22
 CREATE TABLE IF NOT EXISTS "service_categories" (
     "id" UUID DEFAULT gen_random_uuid(),
     "name" JSONB NOT NULL,

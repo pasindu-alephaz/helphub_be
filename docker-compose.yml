@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: helphub-db
+    environment:
+      - POSTGRES_DB=helphub
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: helphub-app
+    develop:
+      watch:
+        - path: ./src
+          action: rebuild
+        - path: ./pom.xml
+          action: rebuild
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/helphub
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_JPA_IBERNATE_DDL_AUTO=validate
+      - SPRING_LIQUIBASE_ENABLED=true
+      - SPRING_MAIL_HOST=smtp.ethereal.email
+      - SPRING_MAIL_PORT=587
+      - SPRING_MAIL_USERNAME=adriana.kuhic@ethereal.email
+      - SPRING_MAIL_PASSWORD=PsTR3HyQqUztBZXSzA
+
+volumes:
+  postgres_data:
