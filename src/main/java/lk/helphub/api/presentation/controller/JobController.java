@@ -54,7 +54,7 @@ public class JobController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
                             examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Category or Subcategory not found\"\n}")))
     })
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('job_create')")
     public ResponseEntity<ApiResponse<JobResponse>> createJob(
             Principal principal,
             @Valid @RequestBody JobCreateRequest request
@@ -86,7 +86,7 @@ public class JobController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
                             examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Job not found\"\n}")))
     })
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('job_update')")
     public ResponseEntity<ApiResponse<Void>> uploadJobImages(
             Principal principal,
             @Parameter(description = "ID of the job to upload images for") @PathVariable UUID id,
@@ -115,7 +115,7 @@ public class JobController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
                             examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Category or Subcategory not found\"\n}")))
     })
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('job_template_create')")
     public ResponseEntity<ApiResponse<JobTemplateResponse>> createJobTemplate(
             Principal principal,
             @Valid @RequestBody JobTemplateCreateRequest request
@@ -200,7 +200,7 @@ public class JobController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Jobs retrieved successfully"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT token required")
     })
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('job_read')")
     public ResponseEntity<ApiResponse<Page<JobResponse>>> getMyPostedJobs(
             Principal principal,
             @PageableDefault(size = 20) Pageable pageable,
@@ -221,7 +221,7 @@ public class JobController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Jobs retrieved successfully"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT token required")
     })
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('job_read')")
     public ResponseEntity<ApiResponse<Page<JobResponse>>> getAcceptedJobs(
             Principal principal,
             @PageableDefault(size = 20) Pageable pageable,
@@ -245,7 +245,7 @@ public class JobController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Not the job poster"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Job not found")
     })
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('job_update')")
     public ResponseEntity<ApiResponse<JobResponse>> updateJob(
             Principal principal,
             @Parameter(description = "ID of the job") @PathVariable UUID id,
@@ -268,7 +268,7 @@ public class JobController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Not the job poster"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Job not found")
     })
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('job_delete')")
     public ResponseEntity<ApiResponse<Void>> deleteJob(
             Principal principal,
             @Parameter(description = "ID of the job") @PathVariable UUID id
