@@ -19,6 +19,7 @@ import lk.helphub.api.application.dto.ProviderCompleteRequest;
 import lk.helphub.api.application.dto.DisputeJobRequest;
 import lk.helphub.api.application.dto.CancelJobRequest;
 import lk.helphub.api.application.dto.RejectJobRequest;
+import lk.helphub.api.application.dto.ImageResponse;
 import lk.helphub.api.application.services.JobService;
 import lk.helphub.api.domain.enums.ResponseStatusCode;
 import lk.helphub.api.presentation.dto.ApiResponse;
@@ -104,6 +105,47 @@ public class JobController {
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
                 .message("Images uploaded successfully")
+                .build());
+    }
+
+    @GetMapping("/{id}/images")
+    @Operation(summary = "Get job images", description = "Retrieve all image URLs attached to a specific job")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Images retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Job not found")
+    })
+    @PreAuthorize("hasAuthority('job_read')")
+    public ResponseEntity<ApiResponse<List<ImageResponse>>> getJobImages(
+            @Parameter(description = "ID of the job") @PathVariable UUID id
+    ) {
+        List<ImageResponse> images = jobService.getJobImages(id);
+        return ResponseEntity.ok(ApiResponse.<List<ImageResponse>>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Images retrieved successfully")
+                .data(images)
+                .build());
+    }
+
+    @DeleteMapping("/{id}/images/{imageId}")
+    @Operation(summary = "Delete job image", description = "Delete a specific image from a job (restricted to job poster)")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Image deleted successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Not the job poster"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Job or Image not found")
+    })
+    @PreAuthorize("hasAuthority('job_update')")
+    public ResponseEntity<ApiResponse<Void>> deleteJobImage(
+            Principal principal,
+            @Parameter(description = "ID of the job") @PathVariable UUID id,
+            @Parameter(description = "ID of the image to delete") @PathVariable UUID imageId
+    ) {
+        jobService.deleteJobImage(id, imageId, principal.getName());
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Image deleted successfully")
                 .build());
     }
 

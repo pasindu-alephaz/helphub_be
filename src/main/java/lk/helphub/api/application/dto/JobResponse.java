@@ -62,6 +62,9 @@ public class JobResponse {
     @Schema(description = "List of image URLs attached to the job")
     private List<String> imageUrls;
 
+    @Schema(description = "List of image details (ID and URL) attached to the job")
+    private List<ImageResponse> images;
+
     @Schema(description = "Creation timestamp")
     private LocalDateTime createdAt;
 

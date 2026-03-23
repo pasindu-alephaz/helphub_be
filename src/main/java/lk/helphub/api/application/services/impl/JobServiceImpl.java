@@ -11,6 +11,7 @@ import lk.helphub.api.application.dto.ProviderCompleteRequest;
 import lk.helphub.api.application.dto.DisputeJobRequest;
 import lk.helphub.api.application.dto.CancelJobRequest;
 import lk.helphub.api.application.dto.RejectJobRequest;
+import lk.helphub.api.application.dto.ImageResponse;
 import lk.helphub.api.application.services.JobService;
 import lk.helphub.api.domain.entity.Image;
 import lk.helphub.api.domain.entity.Job;
@@ -151,6 +152,51 @@ public class JobServiceImpl implements JobService {
             }
         }
 
+        jobRepository.save(job);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ImageResponse> getJobImages(UUID jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("Job not found with id: " + jobId);
+        }
+
+        return job.getImages().stream()
+                .filter(image -> image.getDeletedAt() == null)
+                .map(image -> ImageResponse.builder()
+                        .id(image.getId())
+                        .url(image.getUrl())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteJobImage(UUID jobId, UUID imageId, String userEmail) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("Job not found with id: " + jobId);
+        }
+
+        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to delete images for this job");
+        }
+
+        Image imageToDelete = job.getImages().stream()
+                .filter(img -> img.getId().equals(imageId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Image not found with id: " + imageId + " for this job"));
+
+        imageToDelete.setDeletedAt(LocalDateTime.now());
+        imageRepository.save(imageToDelete);
+
+        // Remove from the set as well
+        job.getImages().remove(imageToDelete);
         jobRepository.save(job);
     }
 
@@ -558,8 +604,16 @@ public class JobServiceImpl implements JobService {
 
     private JobResponse mapToJobResponse(Job job) {
         List<String> imageUrls = new ArrayList<>();
+        List<ImageResponse> images = new ArrayList<>();
         if (job.getImages() != null) {
-            imageUrls = job.getImages().stream().map(Image::getUrl).collect(Collectors.toList());
+            images = job.getImages().stream()
+                    .filter(image -> image.getDeletedAt() == null)
+                    .map(image -> ImageResponse.builder()
+                            .id(image.getId())
+                            .url(image.getUrl())
+                            .build())
+                    .collect(Collectors.toList());
+            imageUrls = images.stream().map(ImageResponse::getUrl).collect(Collectors.toList());
         }
 
         return JobResponse.builder()
@@ -578,6 +632,7 @@ public class JobServiceImpl implements JobService {
                 .postedBy(job.getPostedBy() != null ? job.getPostedBy().getId() : null)
                 .acceptedBy(job.getAcceptedBy() != null ? job.getAcceptedBy().getId() : null)
                 .imageUrls(imageUrls)
+                .images(images)
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
                 .build();
