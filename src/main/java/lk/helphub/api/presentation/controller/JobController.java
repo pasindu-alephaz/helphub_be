@@ -11,6 +11,8 @@ import jakarta.validation.Valid;
 import lk.helphub.api.application.dto.JobCreateRequest;
 import lk.helphub.api.application.dto.JobResponse;
 import lk.helphub.api.application.dto.JobTemplateCreateRequest;
+import lk.helphub.api.application.dto.JobTemplateUpdateRequest;
+import lk.helphub.api.application.dto.JobFromTemplateRequest;
 import lk.helphub.api.application.dto.JobTemplateResponse;
 import lk.helphub.api.application.dto.JobUpdateRequest;
 import lk.helphub.api.application.dto.ProviderCompleteRequest;
@@ -130,6 +132,84 @@ public class JobController {
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
                 .message("Job Template created successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/templates")
+    @Operation(summary = "Get my job templates", description = "Retrieve all job templates created by the authenticated user")
+    @PreAuthorize("hasAuthority('job_template_read')")
+    public ResponseEntity<ApiResponse<List<JobTemplateResponse>>> getMyTemplates(Principal principal) {
+        List<JobTemplateResponse> response = jobService.getMyTemplates(principal.getName());
+        return ResponseEntity.ok(ApiResponse.<List<JobTemplateResponse>>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Templates retrieved successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/templates/{id}")
+    @Operation(summary = "Get template by ID", description = "Retrieve a specific job template by its ID")
+    @PreAuthorize("hasAuthority('job_template_read')")
+    public ResponseEntity<ApiResponse<JobTemplateResponse>> getTemplateById(
+            Principal principal,
+            @PathVariable UUID id
+    ) {
+        JobTemplateResponse response = jobService.getTemplateById(id, principal.getName());
+        return ResponseEntity.ok(ApiResponse.<JobTemplateResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Template retrieved successfully")
+                .data(response)
+                .build());
+    }
+
+    @PutMapping("/templates/{id}")
+    @Operation(summary = "Update job template", description = "Update an existing job template")
+    @PreAuthorize("hasAuthority('job_template_update')")
+    public ResponseEntity<ApiResponse<JobTemplateResponse>> updateTemplate(
+            Principal principal,
+            @PathVariable UUID id,
+            @Valid @RequestBody JobTemplateUpdateRequest request
+    ) {
+        JobTemplateResponse response = jobService.updateTemplate(id, principal.getName(), request);
+        return ResponseEntity.ok(ApiResponse.<JobTemplateResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Template updated successfully")
+                .data(response)
+                .build());
+    }
+
+    @DeleteMapping("/templates/{id}")
+    @Operation(summary = "Delete job template", description = "Permanently delete a job template")
+    @PreAuthorize("hasAuthority('job_template_delete')")
+    public ResponseEntity<ApiResponse<Void>> deleteTemplate(
+            Principal principal,
+            @PathVariable UUID id
+    ) {
+        jobService.deleteTemplate(id, principal.getName());
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Template deleted successfully")
+                .build());
+    }
+
+    @PostMapping("/templates/{id}/use")
+    @Operation(summary = "Create job from template", description = "Create a new job using a saved template with optional overrides")
+    @PreAuthorize("hasAuthority('job_create')")
+    public ResponseEntity<ApiResponse<JobResponse>> createJobFromTemplate(
+            Principal principal,
+            @PathVariable UUID id,
+            @RequestBody(required = false) JobFromTemplateRequest request
+    ) {
+        JobResponse response = jobService.createJobFromTemplate(id, principal.getName(), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.<JobResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Job created from template successfully")
                 .data(response)
                 .build());
     }

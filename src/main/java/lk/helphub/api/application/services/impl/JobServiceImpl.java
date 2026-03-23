@@ -5,6 +5,8 @@ import lk.helphub.api.application.dto.JobResponse;
 import lk.helphub.api.application.dto.JobTemplateCreateRequest;
 import lk.helphub.api.application.dto.JobTemplateResponse;
 import lk.helphub.api.application.dto.JobUpdateRequest;
+import lk.helphub.api.application.dto.JobTemplateUpdateRequest;
+import lk.helphub.api.application.dto.JobFromTemplateRequest;
 import lk.helphub.api.application.dto.ProviderCompleteRequest;
 import lk.helphub.api.application.dto.DisputeJobRequest;
 import lk.helphub.api.application.dto.CancelJobRequest;
@@ -172,11 +174,108 @@ public class JobServiceImpl implements JobService {
                 .locationCoordinates(parseLocation(request.getLocationCoordinates()))
                 .price(request.getPrice())
                 .urgencyFlag(request.getUrgencyFlag())
+                .jobType(request.getJobType())
+                .preferredPrice(request.getPreferredPrice())
                 .user(user)
                 .build();
 
         JobTemplate savedTemplate = jobTemplateRepository.save(template);
         return mapToJobTemplateResponse(savedTemplate);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<JobTemplateResponse> getMyTemplates(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+        return jobTemplateRepository.findAllByUser(user).stream()
+                .map(this::mapToJobTemplateResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JobTemplateResponse getTemplateById(UUID templateId, String userEmail) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+        
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to access this template");
+        }
+        
+        return mapToJobTemplateResponse(template);
+    }
+
+    @Override
+    public JobTemplateResponse updateTemplate(UUID templateId, String userEmail, JobTemplateUpdateRequest request) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to update this template");
+        }
+
+        if (request.getTemplateName() != null) template.setTemplateName(request.getTemplateName());
+        if (request.getTitle() != null) template.setTitle(request.getTitle());
+        if (request.getDescription() != null) template.setDescription(request.getDescription());
+        if (request.getLocationAddress() != null) template.setLocationAddress(request.getLocationAddress());
+        if (request.getLocationCoordinates() != null) template.setLocationCoordinates(parseLocation(request.getLocationCoordinates()));
+        if (request.getPrice() != null) template.setPrice(request.getPrice());
+        if (request.getUrgencyFlag() != null) template.setUrgencyFlag(request.getUrgencyFlag());
+        if (request.getJobType() != null) template.setJobType(request.getJobType());
+        if (request.getPreferredPrice() != null) template.setPreferredPrice(request.getPreferredPrice());
+
+        if (request.getSubcategoryId() != null) {
+            ServiceCategory subcategory = serviceCategoryRepository.findById(request.getSubcategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found with id: " + request.getSubcategoryId()));
+            template.setSubcategory(subcategory);
+        }
+
+        JobTemplate savedTemplate = jobTemplateRepository.save(template);
+        return mapToJobTemplateResponse(savedTemplate);
+    }
+
+    @Override
+    public void deleteTemplate(UUID templateId, String userEmail) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to delete this template");
+        }
+
+        jobTemplateRepository.delete(template);
+    }
+
+    @Override
+    public JobResponse createJobFromTemplate(UUID templateId, String userEmail, JobFromTemplateRequest request) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to use this template");
+        }
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+
+        Job job = Job.builder()
+                .title(request.getTitle() != null ? request.getTitle() : template.getTitle())
+                .description(request.getDescription() != null ? request.getDescription() : template.getDescription())
+                .subcategory(template.getSubcategory())
+                .locationAddress(template.getLocationAddress())
+                .locationCoordinates(template.getLocationCoordinates())
+                .price(request.getPrice() != null ? request.getPrice() : template.getPrice())
+                .scheduledAt(request.getScheduledAt())
+                .jobType(template.getJobType())
+                .preferredPrice(template.getPreferredPrice())
+                .urgencyFlag(template.getUrgencyFlag())
+                .postedBy(user)
+                .status("OPEN")
+                .build();
+
+        Job savedJob = jobRepository.save(job);
+        return mapToJobResponse(savedJob);
     }
 
     @Override
@@ -495,6 +594,8 @@ public class JobServiceImpl implements JobService {
                 .locationCoordinates(template.getLocationCoordinates() != null ? template.getLocationCoordinates().toText() : null)
                 .price(template.getPrice())
                 .urgencyFlag(template.getUrgencyFlag())
+                .jobType(template.getJobType())
+                .preferredPrice(template.getPreferredPrice())
                 .userId(template.getUser() != null ? template.getUser().getId() : null)
                 .createdAt(template.getCreatedAt())
                 .updatedAt(template.getUpdatedAt())

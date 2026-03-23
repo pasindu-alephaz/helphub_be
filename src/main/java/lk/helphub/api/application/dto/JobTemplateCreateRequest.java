@@ -48,4 +48,10 @@ public class JobTemplateCreateRequest {
 
     @Schema(description = "Urgency flag", example = "Normal", allowableValues = {"Normal", "Urgent"}, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String urgencyFlag;
+
+    @Schema(description = "Filter by job type (FIXED, BIDDING)", example = "FIXED", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String jobType;
+
+    @Schema(description = "Preferred price for the job", example = "2500.00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private BigDecimal preferredPrice;
 }

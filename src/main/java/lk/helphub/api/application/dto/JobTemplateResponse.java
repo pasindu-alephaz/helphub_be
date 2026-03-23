@@ -43,6 +43,12 @@ public class JobTemplateResponse {
     @Schema(description = "Urgency flag", example = "Normal")
     private String urgencyFlag;
 
+    @Schema(description = "Job type (FIXED, BIDDING)", example = "FIXED")
+    private String jobType;
+
+    @Schema(description = "Preferred price for the job", example = "2500.00")
+    private BigDecimal preferredPrice;
+
     @Schema(description = "User ID who created the template")
     private UUID userId;
 

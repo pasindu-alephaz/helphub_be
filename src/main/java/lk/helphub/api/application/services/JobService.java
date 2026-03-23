@@ -5,6 +5,8 @@ import lk.helphub.api.application.dto.JobResponse;
 import lk.helphub.api.application.dto.JobTemplateCreateRequest;
 import lk.helphub.api.application.dto.JobTemplateResponse;
 import lk.helphub.api.application.dto.JobUpdateRequest;
+import lk.helphub.api.application.dto.JobTemplateUpdateRequest;
+import lk.helphub.api.application.dto.JobFromTemplateRequest;
 import lk.helphub.api.application.dto.ProviderCompleteRequest;
 import lk.helphub.api.application.dto.DisputeJobRequest;
 import lk.helphub.api.application.dto.CancelJobRequest;
@@ -25,6 +27,16 @@ public interface JobService {
     void uploadJobImages(UUID jobId, String userEmail, MultipartFile[] images);
 
     JobTemplateResponse createJobTemplate(String userEmail, JobTemplateCreateRequest request);
+
+    List<JobTemplateResponse> getMyTemplates(String userEmail);
+
+    JobTemplateResponse getTemplateById(UUID templateId, String userEmail);
+
+    JobTemplateResponse updateTemplate(UUID templateId, String userEmail, JobTemplateUpdateRequest request);
+
+    void deleteTemplate(UUID templateId, String userEmail);
+
+    JobResponse createJobFromTemplate(UUID templateId, String userEmail, JobFromTemplateRequest request);
 
     Page<JobResponse> getJobs(Pageable pageable, UUID subcategoryId, String status, String urgencyFlag, BigDecimal minPrice, BigDecimal maxPrice, String locationCity, String jobType);
 
