@@ -13,6 +13,10 @@ import lk.helphub.api.application.dto.JobResponse;
 import lk.helphub.api.application.dto.JobTemplateCreateRequest;
 import lk.helphub.api.application.dto.JobTemplateResponse;
 import lk.helphub.api.application.dto.JobUpdateRequest;
+import lk.helphub.api.application.dto.ProviderCompleteRequest;
+import lk.helphub.api.application.dto.DisputeJobRequest;
+import lk.helphub.api.application.dto.CancelJobRequest;
+import lk.helphub.api.application.dto.RejectJobRequest;
 import lk.helphub.api.application.services.JobService;
 import lk.helphub.api.domain.enums.ResponseStatusCode;
 import lk.helphub.api.presentation.dto.ApiResponse;
@@ -278,6 +282,130 @@ public class JobController {
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
                 .message("Job deleted successfully")
+                .build());
+    }
+
+    @PostMapping("/{id}/accept")
+    @Operation(summary = "Accept/claim a job", description = "Claim an open job as a service provider")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Job accepted successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Job not open for acceptance or poster trying to accept own job")
+    })
+    @PreAuthorize("hasAuthority('job_accept')")
+    public ResponseEntity<ApiResponse<JobResponse>> acceptJob(
+            Principal principal,
+            @PathVariable UUID id
+    ) {
+        JobResponse response = jobService.acceptJob(id, principal.getName());
+        return ResponseEntity.ok(ApiResponse.<JobResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Job accepted successfully")
+                .data(response)
+                .build());
+    }
+
+    @PostMapping("/{id}/provider-complete")
+    @Operation(summary = "Provider mark as complete", description = "Provider indicates they have finished the work")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Job marked as pending confirmation"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid state or unauthorized")
+    })
+    @PreAuthorize("hasAuthority('job_complete_provider')")
+    public ResponseEntity<ApiResponse<JobResponse>> providerCompleteJob(
+            Principal principal,
+            @PathVariable UUID id,
+            @RequestBody(required = false) ProviderCompleteRequest request
+    ) {
+        JobResponse response = jobService.providerCompleteJob(id, principal.getName(), request);
+        return ResponseEntity.ok(ApiResponse.<JobResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Job marked as pending confirmation")
+                .data(response)
+                .build());
+    }
+
+    @PostMapping("/{id}/complete")
+    @Operation(summary = "Confirm completion", description = "Job poster confirms the job is completed")
+    @PreAuthorize("hasAuthority('job_complete')")
+    public ResponseEntity<ApiResponse<JobResponse>> completeJob(
+            Principal principal,
+            @PathVariable UUID id
+    ) {
+        JobResponse response = jobService.completeJob(id, principal.getName());
+        return ResponseEntity.ok(ApiResponse.<JobResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Job completed successfully")
+                .data(response)
+                .build());
+    }
+
+    @PostMapping("/{id}/dispute")
+    @Operation(summary = "Initiate dispute", description = "Either poster or provider raises an issue")
+    @PreAuthorize("hasAuthority('job_dispute')")
+    public ResponseEntity<ApiResponse<JobResponse>> disputeJob(
+            Principal principal,
+            @PathVariable UUID id,
+            @RequestBody DisputeJobRequest request
+    ) {
+        JobResponse response = jobService.disputeJob(id, principal.getName(), request);
+        return ResponseEntity.ok(ApiResponse.<JobResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Job status changed to DISPUTED")
+                .data(response)
+                .build());
+    }
+
+    @PostMapping("/{id}/cancel")
+    @Operation(summary = "Cancel job", description = "Job poster cancels the job")
+    @PreAuthorize("hasAuthority('job_cancel')")
+    public ResponseEntity<ApiResponse<JobResponse>> cancelJob(
+            Principal principal,
+            @PathVariable UUID id,
+            @RequestBody(required = false) CancelJobRequest request
+    ) {
+        JobResponse response = jobService.cancelJob(id, principal.getName(), request);
+        return ResponseEntity.ok(ApiResponse.<JobResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Job cancelled successfully")
+                .data(response)
+                .build());
+    }
+
+    @PostMapping("/{id}/start")
+    @Operation(summary = "Start job", description = "Provider confirms work has begun")
+    @PreAuthorize("hasAuthority('job_start')")
+    public ResponseEntity<ApiResponse<JobResponse>> startJob(
+            Principal principal,
+            @PathVariable UUID id
+    ) {
+        JobResponse response = jobService.startJob(id, principal.getName());
+        return ResponseEntity.ok(ApiResponse.<JobResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Job started successfully")
+                .data(response)
+                .build());
+    }
+
+    @PostMapping("/{id}/reject")
+    @Operation(summary = "Reject job", description = "Provider decides not to proceed")
+    @PreAuthorize("hasAuthority('job_reject')")
+    public ResponseEntity<ApiResponse<JobResponse>> rejectJob(
+            Principal principal,
+            @PathVariable UUID id,
+            @RequestBody(required = false) RejectJobRequest request
+    ) {
+        JobResponse response = jobService.rejectJob(id, principal.getName(), request);
+        return ResponseEntity.ok(ApiResponse.<JobResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Job rejected and returned to OPEN status")
+                .data(response)
                 .build());
     }
 }

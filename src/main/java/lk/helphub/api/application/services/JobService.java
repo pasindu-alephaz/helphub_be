@@ -5,6 +5,10 @@ import lk.helphub.api.application.dto.JobResponse;
 import lk.helphub.api.application.dto.JobTemplateCreateRequest;
 import lk.helphub.api.application.dto.JobTemplateResponse;
 import lk.helphub.api.application.dto.JobUpdateRequest;
+import lk.helphub.api.application.dto.ProviderCompleteRequest;
+import lk.helphub.api.application.dto.DisputeJobRequest;
+import lk.helphub.api.application.dto.CancelJobRequest;
+import lk.helphub.api.application.dto.RejectJobRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.data.domain.Page;
@@ -36,4 +40,19 @@ public interface JobService {
     JobResponse updateJob(UUID jobId, String userEmail, JobUpdateRequest request);
 
     void deleteJob(UUID jobId, String userEmail);
+
+    // Job Workflow Actions
+    JobResponse acceptJob(UUID jobId, String userEmail);
+
+    JobResponse providerCompleteJob(UUID jobId, String userEmail, ProviderCompleteRequest request);
+
+    JobResponse completeJob(UUID jobId, String userEmail);
+
+    JobResponse disputeJob(UUID jobId, String userEmail, DisputeJobRequest request);
+
+    JobResponse cancelJob(UUID jobId, String userEmail, CancelJobRequest request);
+
+    JobResponse startJob(UUID jobId, String userEmail);
+
+    JobResponse rejectJob(UUID jobId, String userEmail, RejectJobRequest request);
 }
