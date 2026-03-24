@@ -9,4 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface JpaImageRepository extends JpaRepository<Image, UUID>, ImageRepository {
+    @Override
+    Image save(Image image);
 }
