@@ -42,11 +42,26 @@ public class JobTemplate {
     @Column(name = "location_coordinates", columnDefinition = "geometry(Point,4326)")
     private Point locationCoordinates;
 
+    @Column(name = "job_type", length = 20)
+    private String jobType;
+
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(name = "preferred_price", precision = 10, scale = 2)
+    private BigDecimal preferredPrice;
+
     @Column(name = "urgency_flag", length = 20)
     private String urgencyFlag;
+
+    @Column(name = "job_availability_duration", length = 50)
+    private String jobAvailabilityDuration;
+
+    @Column(name = "job_plan", length = 100)
+    private String jobPlan;
+
+    @Column(name = "preferred_language", length = 50)
+    private String preferredLanguage;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

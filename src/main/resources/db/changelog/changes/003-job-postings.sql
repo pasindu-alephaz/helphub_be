@@ -5,6 +5,7 @@ CREATE SCHEMA IF NOT EXISTS extensions;
 CREATE EXTENSION IF NOT EXISTS postgis SCHEMA extensions;
 
 -- changeset antigravity:32
+-- validCheckSum: 9:73da06b091bda6aa75c0082e3ce5860f
 CREATE TABLE IF NOT EXISTS "jobs" (
 	"id" UUID DEFAULT gen_random_uuid(),
 	"title" VARCHAR(100) NOT NULL,
@@ -15,6 +16,11 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"price" DECIMAL(10,2),
 	"scheduled_at" TIMESTAMP,
 	"urgency_flag" VARCHAR(20),
+	"job_type" VARCHAR(20),
+	"preferred_price" DECIMAL(10,2),
+	"job_availability_duration" VARCHAR(50),
+	"job_plan" VARCHAR(100),
+	"preferred_language" VARCHAR(50),
 	"posted_by" UUID NOT NULL,
 	"accepted_by" UUID,
 	"status" VARCHAR(20) NOT NULL DEFAULT 'OPEN',
@@ -29,6 +35,7 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 
 
 -- changeset antigravity:33
+-- validCheckSum: 9:a812906e36cb13f498d03ac338e16b5f
 CREATE TABLE IF NOT EXISTS "job_templates" (
     "id" UUID DEFAULT gen_random_uuid(),
     "template_name" VARCHAR(100) NOT NULL,
@@ -39,6 +46,11 @@ CREATE TABLE IF NOT EXISTS "job_templates" (
     "location_coordinates" geometry(Point,4326) NOT NULL,
     "price" DECIMAL(10, 2),
     "urgency_flag" VARCHAR(20),
+    "job_type" VARCHAR(20),
+    "preferred_price" DECIMAL(10,2),
+    "job_availability_duration" VARCHAR(50),
+    "job_plan" VARCHAR(100),
+    "preferred_language" VARCHAR(50),
     "user_id" UUID NOT NULL,
     "created_at" TIMESTAMP DEFAULT now(),
     "updated_at" TIMESTAMP DEFAULT now(),

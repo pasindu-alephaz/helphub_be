@@ -48,4 +48,19 @@ public class JobTemplateCreateRequest {
 
     @Schema(description = "Urgency flag", example = "Normal", allowableValues = {"Normal", "Urgent"}, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String urgencyFlag;
+
+    @Schema(description = "Filter by job type (FIXED, BIDDING)", example = "FIXED", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String jobType;
+
+    @Schema(description = "Preferred price for the job", example = "2500.00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private BigDecimal preferredPrice;
+
+    @Schema(description = "Job availability duration", example = "2 hours", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String jobAvailabilityDuration;
+
+    @Schema(description = "Job plan details", example = "Standard Plan", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String jobPlan;
+
+    @Schema(description = "Preferred language for communication", example = "English", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String preferredLanguage;
 }

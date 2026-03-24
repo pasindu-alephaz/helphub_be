@@ -13,6 +13,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.data.mapping.PropertyReferenceException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -41,6 +42,16 @@ public class GlobalExceptionHandler {
                 .status(false)
                 .statusCode(ResponseStatusCode.FORBIDDEN)
                 .message("Access Denied: You do not have permission to access this resource")
+                .data(ex.getMessage())
+                .build());
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ApiResponse<Object>> handlePropertyReferenceException(PropertyReferenceException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.builder()
+                .status(false)
+                .statusCode(ResponseStatusCode.BAD_REQUEST)
+                .message("Invalid property reference: " + ex.getPropertyName())
                 .data(ex.getMessage())
                 .build());
     }
