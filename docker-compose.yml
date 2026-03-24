@@ -40,6 +40,8 @@ services:
       - SPRING_MAIL_PORT=587
       - SPRING_MAIL_USERNAME=adriana.kuhic@ethereal.email
       - SPRING_MAIL_PASSWORD=PsTR3HyQqUztBZXSzA
+    volumes:
+      - ./uploads:/app/uploads
 
 volumes:
   postgres_data:
