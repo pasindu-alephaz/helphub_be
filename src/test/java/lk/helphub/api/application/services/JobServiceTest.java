@@ -2,7 +2,9 @@ package lk.helphub.api.application.services;
 
 import lk.helphub.api.application.dto.JobResponse;
 import lk.helphub.api.application.services.impl.JobServiceImpl;
+import lk.helphub.api.domain.entity.Image;
 import lk.helphub.api.domain.entity.Job;
+import lk.helphub.api.domain.entity.ServiceCategory;
 import lk.helphub.api.domain.entity.User;
 import lk.helphub.api.domain.repository.ImageRepository;
 import lk.helphub.api.domain.repository.JobRepository;
@@ -22,8 +24,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.WKTReader;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,6 +81,32 @@ public class JobServiceTest {
 
         assertNotNull(result);
         assertEquals("Specific Job", result.getTitle());
+    }
+
+    @Test
+    void testGetJobById_WithImages() {
+        UUID jobId = UUID.randomUUID();
+        Job job = new Job();
+        job.setId(jobId);
+        job.setTitle("Job with Images");
+
+        Image image1 = Image.builder().id(UUID.randomUUID()).url("/uploads/img1.jpg").build();
+        Image image2 = Image.builder().id(UUID.randomUUID()).url("/uploads/img2.jpg").build();
+        Set<Image> imageSet = new HashSet<>(List.of(image1, image2));
+        job.setImages(imageSet);
+
+        when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
+
+        JobResponse result = jobService.getJobById(jobId);
+
+        assertNotNull(result);
+        assertEquals("Job with Images", result.getTitle());
+        assertNotNull(result.getImageUrls());
+        assertEquals(2, result.getImageUrls().size());
+        assertTrue(result.getImageUrls().contains("/uploads/img1.jpg"));
+        assertTrue(result.getImageUrls().contains("/uploads/img2.jpg"));
+        assertNotNull(result.getImages());
+        assertEquals(2, result.getImages().size());
     }
 
     @Test
