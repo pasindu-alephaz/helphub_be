@@ -47,14 +47,23 @@ public class ImageUploadService {
 
     @Transactional
     public String uploadProfilePicture(String email, MultipartFile file) throws IOException {
+        User user = findUser(email);
+        String imageUrl = uploadImage(user, file, "profile", "profile-pictures");
+
+        // Update user's profile image URL
+        user.setProfileImageUrl(imageUrl);
+        userRepository.save(user);
+
+        log.info("Profile picture uploaded for user {}: {}", user.getId(), imageUrl);
+        return imageUrl;
+    }
+
+    @Transactional
+    public String uploadImage(User user, MultipartFile file, String imageType, String subDir) throws IOException {
         validateFile(file);
 
-        User user = userRepository.findByEmail(email)
-                .or(() -> userRepository.findByPhoneNumber(email))
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
         // Ensure upload directory exists
-        Path uploadPath = Paths.get(uploadDir);
+        Path uploadPath = Paths.get(uploadDir).getParent().resolve(subDir);
         Files.createDirectories(uploadPath);
 
         // Read and process image
@@ -70,13 +79,13 @@ public class ImageUploadService {
         File outputFile = uploadPath.resolve(filename).toFile();
         saveAsJpeg(resized, outputFile);
 
-        String imageUrl = baseUrl + "/uploads/profile-pictures/" + filename;
+        String imageUrl = baseUrl + "/uploads/" + subDir + "/" + filename;
 
         // Persist image metadata
         Image imageRecord = Image.builder()
                 .user(user)
                 .url(imageUrl)
-                .imageType("PROFILE_IMAGE")
+                .imageType(imageType)
                 .fileSize(outputFile.length())
                 .width(resized.getWidth())
                 .height(resized.getHeight())
@@ -89,6 +98,12 @@ public class ImageUploadService {
 
         log.info("Profile picture uploaded for user {}: {}", user.getId(), imageUrl);
         return imageUrl;
+    }
+
+    private User findUser(String email) {
+        return userRepository.findByEmail(email)
+                .or(() -> userRepository.findByPhoneNumber(email))
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     private void validateFile(MultipartFile file) {
