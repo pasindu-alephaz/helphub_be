@@ -49,6 +49,15 @@ public class JobTemplateResponse {
     @Schema(description = "Preferred price for the job", example = "2500.00")
     private BigDecimal preferredPrice;
 
+    @Schema(description = "Job availability duration", example = "2 hours")
+    private String jobAvailabilityDuration;
+
+    @Schema(description = "Job plan details", example = "Standard Plan")
+    private String jobPlan;
+
+    @Schema(description = "Preferred language for communication", example = "English")
+    private String preferredLanguage;
+
     @Schema(description = "User ID who created the template")
     private UUID userId;
 

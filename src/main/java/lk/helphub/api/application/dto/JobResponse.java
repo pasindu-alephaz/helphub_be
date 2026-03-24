@@ -50,6 +50,15 @@ public class JobResponse {
     @Schema(description = "Urgency flag", example = "Urgent")
     private String urgencyFlag;
 
+    @Schema(description = "Job availability duration", example = "2 hours")
+    private String jobAvailabilityDuration;
+
+    @Schema(description = "Job plan details", example = "Standard Plan")
+    private String jobPlan;
+
+    @Schema(description = "Preferred language for communication", example = "English")
+    private String preferredLanguage;
+
     @Schema(description = "Current status of the job", example = "OPEN")
     private String status;
 

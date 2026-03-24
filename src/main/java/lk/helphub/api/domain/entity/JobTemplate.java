@@ -54,6 +54,15 @@ public class JobTemplate {
     @Column(name = "urgency_flag", length = 20)
     private String urgencyFlag;
 
+    @Column(name = "job_availability_duration", length = 50)
+    private String jobAvailabilityDuration;
+
+    @Column(name = "job_plan", length = 100)
+    private String jobPlan;
+
+    @Column(name = "preferred_language", length = 50)
+    private String preferredLanguage;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

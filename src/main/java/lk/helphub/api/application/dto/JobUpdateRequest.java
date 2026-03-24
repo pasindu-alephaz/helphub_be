@@ -30,4 +30,13 @@ public class JobUpdateRequest {
 
     @Schema(description = "Preferred price for the job", example = "1500.00")
     private BigDecimal preferredPrice;
+
+    @Schema(description = "Job availability duration", example = "2 hours")
+    private String jobAvailabilityDuration;
+
+    @Schema(description = "Job plan details", example = "Standard Plan")
+    private String jobPlan;
+
+    @Schema(description = "Preferred language for communication", example = "English")
+    private String preferredLanguage;
 }

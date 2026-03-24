@@ -85,6 +85,11 @@ public class JobServiceImpl implements JobService {
                 .price(request.getPrice())
                 .scheduledAt(request.getScheduledAt())
                 .urgencyFlag(request.getUrgencyFlag())
+                .jobType(request.getJobType())
+                .preferredPrice(request.getPreferredPrice())
+                .jobAvailabilityDuration(request.getJobAvailabilityDuration())
+                .jobPlan(request.getJobPlan())
+                .preferredLanguage(request.getPreferredLanguage())
                 .postedBy(user)
                 .status("OPEN")
                 .build();
@@ -222,6 +227,9 @@ public class JobServiceImpl implements JobService {
                 .urgencyFlag(request.getUrgencyFlag())
                 .jobType(request.getJobType())
                 .preferredPrice(request.getPreferredPrice())
+                .jobAvailabilityDuration(request.getJobAvailabilityDuration())
+                .jobPlan(request.getJobPlan())
+                .preferredLanguage(request.getPreferredLanguage())
                 .user(user)
                 .build();
 
@@ -270,6 +278,9 @@ public class JobServiceImpl implements JobService {
         if (request.getUrgencyFlag() != null) template.setUrgencyFlag(request.getUrgencyFlag());
         if (request.getJobType() != null) template.setJobType(request.getJobType());
         if (request.getPreferredPrice() != null) template.setPreferredPrice(request.getPreferredPrice());
+        if (request.getJobAvailabilityDuration() != null) template.setJobAvailabilityDuration(request.getJobAvailabilityDuration());
+        if (request.getJobPlan() != null) template.setJobPlan(request.getJobPlan());
+        if (request.getPreferredLanguage() != null) template.setPreferredLanguage(request.getPreferredLanguage());
 
         if (request.getSubcategoryId() != null) {
             ServiceCategory subcategory = serviceCategoryRepository.findById(request.getSubcategoryId())
@@ -315,6 +326,9 @@ public class JobServiceImpl implements JobService {
                 .scheduledAt(request.getScheduledAt())
                 .jobType(template.getJobType())
                 .preferredPrice(template.getPreferredPrice())
+                .jobAvailabilityDuration(template.getJobAvailabilityDuration())
+                .jobPlan(template.getJobPlan())
+                .preferredLanguage(template.getPreferredLanguage())
                 .urgencyFlag(template.getUrgencyFlag())
                 .postedBy(user)
                 .status("OPEN")
@@ -349,10 +363,9 @@ public class JobServiceImpl implements JobService {
             if (locationCity != null && !locationCity.trim().isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("locationAddress")), "%" + locationCity.toLowerCase() + "%"));
             }
-            // If there's a jobType field, uncomment below when entity supports it (currently not in Job entity)
-            // if (jobType != null && !jobType.trim().isEmpty()) {
-            //     predicates.add(cb.equal(root.get("jobType"), jobType));
-            // }
+            if (jobType != null && !jobType.trim().isEmpty()) {
+                predicates.add(cb.equal(root.get("jobType"), jobType));
+            }
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
@@ -432,6 +445,15 @@ public class JobServiceImpl implements JobService {
         }
         if (request.getPreferredPrice() != null) {
             job.setPreferredPrice(request.getPreferredPrice());
+        }
+        if (request.getJobAvailabilityDuration() != null) {
+            job.setJobAvailabilityDuration(request.getJobAvailabilityDuration());
+        }
+        if (request.getJobPlan() != null) {
+            job.setJobPlan(request.getJobPlan());
+        }
+        if (request.getPreferredLanguage() != null) {
+            job.setPreferredLanguage(request.getPreferredLanguage());
         }
         if (request.getJobDate() != null || request.getJobTime() != null) {
             LocalDateTime scheduledAt = job.getScheduledAt();
@@ -627,6 +649,9 @@ public class JobServiceImpl implements JobService {
                 .scheduledAt(job.getScheduledAt())
                 .jobType(job.getJobType())
                 .preferredPrice(job.getPreferredPrice())
+                .jobAvailabilityDuration(job.getJobAvailabilityDuration())
+                .jobPlan(job.getJobPlan())
+                .preferredLanguage(job.getPreferredLanguage())
                 .urgencyFlag(job.getUrgencyFlag())
                 .status(job.getStatus())
                 .postedBy(job.getPostedBy() != null ? job.getPostedBy().getId() : null)
@@ -651,6 +676,9 @@ public class JobServiceImpl implements JobService {
                 .urgencyFlag(template.getUrgencyFlag())
                 .jobType(template.getJobType())
                 .preferredPrice(template.getPreferredPrice())
+                .jobAvailabilityDuration(template.getJobAvailabilityDuration())
+                .jobPlan(template.getJobPlan())
+                .preferredLanguage(template.getPreferredLanguage())
                 .userId(template.getUser() != null ? template.getUser().getId() : null)
                 .createdAt(template.getCreatedAt())
                 .updatedAt(template.getUpdatedAt())
