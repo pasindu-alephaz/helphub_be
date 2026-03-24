@@ -48,13 +48,13 @@ public class ProviderOnboardingControllerTest {
     @Test
     @WithMockUser(username = "test@helphub.lk")
     void testSubmitIdentity() throws Exception {
-        MockMultipartFile frontImage = new MockMultipartFile("frontImage", "front.jpg", "image/jpeg", "content".getBytes());
-        MockMultipartFile backImage = new MockMultipartFile("backImage", "back.jpg", "image/jpeg", "content".getBytes());
+        MockMultipartFile doc1 = new MockMultipartFile("documentImages", "front.jpg", "image/jpeg", "content".getBytes());
+        MockMultipartFile doc2 = new MockMultipartFile("documentImages", "back.jpg", "image/jpeg", "content".getBytes());
         MockMultipartFile selfieImage = new MockMultipartFile("selfieImage", "selfie.jpg", "image/jpeg", "content".getBytes());
 
         mockMvc.perform(multipart("/api/v1/providers/onboarding/identity")
-                .file(frontImage)
-                .file(backImage)
+                .file(doc1)
+                .file(doc2)
                 .file(selfieImage)
                 .param("idType", "NIC")
                 .param("idNumber", "123456789V")
@@ -62,5 +62,39 @@ public class ProviderOnboardingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(true))
                 .andExpect(jsonPath("$.message").value("Identity documents submitted successfully"));
+    }
+
+    @Test
+    @WithMockUser(username = "test@helphub.lk")
+    void testAddCertificate() throws Exception {
+        MockMultipartFile cert1 = new MockMultipartFile("files", "cert1.jpg", "image/jpeg", "content".getBytes());
+        MockMultipartFile cert2 = new MockMultipartFile("files", "cert2.jpg", "image/jpeg", "content".getBytes());
+
+        mockMvc.perform(multipart("/api/v1/providers/onboarding/certificates")
+                .file(cert1)
+                .file(cert2)
+                .param("name", "Expert Plumber")
+                .param("issuedDate", "2023-01-01")
+                .principal(principal))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(true))
+                .andExpect(jsonPath("$.message").value("Certificate added successfully"));
+    }
+
+    @Test
+    @WithMockUser(username = "test@helphub.lk")
+    void testAddPortfolioItem() throws Exception {
+        MockMultipartFile item1 = new MockMultipartFile("files", "item1.jpg", "image/jpeg", "content".getBytes());
+        MockMultipartFile item2 = new MockMultipartFile("files", "item2.jpg", "image/jpeg", "content".getBytes());
+
+        mockMvc.perform(multipart("/api/v1/providers/onboarding/portfolio")
+                .file(item1)
+                .file(item2)
+                .param("title", "My Project")
+                .param("description", "A cool project")
+                .principal(principal))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(true))
+                .andExpect(jsonPath("$.message").value("Portfolio item added successfully"));
     }
 }

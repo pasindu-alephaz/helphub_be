@@ -46,7 +46,7 @@ public class ProviderOnboardingController {
     public ResponseEntity<ApiResponse<Void>> addCertificate(
             Principal principal,
             @RequestParam("name") String name,
-            @RequestParam("issuedDate") @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate issuedDate,
+            @RequestParam("issuedDate") @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE, fallbackPatterns = {"yyyy.MM.dd", "yyyy/MM/dd"}) java.time.LocalDate issuedDate,
             @RequestPart("files") org.springframework.web.multipart.MultipartFile[] files) {
         onboardingService.addCertificate(principal.getName(), name, issuedDate, files);
         return ResponseEntity.ok(ApiResponse.<Void>builder()
