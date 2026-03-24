@@ -4,9 +4,12 @@ import lk.helphub.api.domain.enums.ResponseStatusCode;
 import lk.helphub.api.presentation.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import lk.helphub.api.domain.exception.ResourceNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +23,25 @@ public class GlobalExceptionHandler {
                 .status(false)
                 .statusCode(ResponseStatusCode.BAD_REQUEST)
                 .message(ex.getMessage())
+                .build());
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.builder()
+                .status(false)
+                .statusCode(ResponseStatusCode.NOT_FOUND)
+                .message(ex.getMessage())
+                .build());
+    }
+
+    @ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
+    public ResponseEntity<ApiResponse<Object>> handleAccessDeniedException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.builder()
+                .status(false)
+                .statusCode(ResponseStatusCode.FORBIDDEN)
+                .message("Access Denied: You do not have permission to access this resource")
+                .data(ex.getMessage())
                 .build());
     }
 

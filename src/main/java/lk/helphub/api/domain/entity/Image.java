@@ -31,6 +31,15 @@ public class Image {
     @Column(name = "image_type", length = 50)
     private String imageType;
 
+    @Column(name = "file_size")
+    private Long fileSize;
+
+    @Column(name = "width")
+    private Integer width;
+
+    @Column(name = "height")
+    private Integer height;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

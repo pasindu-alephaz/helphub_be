@@ -1,12 +1,16 @@
 package lk.helphub.api.domain.entity;
 
 import jakarta.persistence.*;
+import lk.helphub.api.domain.enums.IdentityType;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,7 +27,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true, unique = true)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
@@ -38,8 +42,24 @@ public class User {
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
     @Column(columnDefinition = "TEXT")
     private String bio;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "identity_type", length = 20)
+    private IdentityType identityType;
+
+    @Column(name = "identity_value", length = 100)
+    private String identityValue;
+
+    @Column(name = "language_preference", length = 20)
+    private String languagePreference = "SINHALA";
+
+    @Column(name = "delete_reason", columnDefinition = "TEXT")
+    private String deleteReason;
 
     @Column(name = "avatar_id")
     private UUID avatarId;
@@ -50,8 +70,26 @@ public class User {
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
 
+    @Column(name = "email_verified_at")
+    private LocalDateTime emailVerifiedAt;
+
+    @Column(name = "phone_verified_at")
+    private LocalDateTime phoneVerifiedAt;
+
     @Column(length = 20)
     private String status = "active";
+
+    @Column(name = "google_id", length = 255)
+    private String googleId;
+
+    @Column(name = "apple_id", length = 255)
+    private String appleId;
+
+    @Column(name = "profile_image_url", columnDefinition = "TEXT")
+    private String profileImageUrl;
+
+    @Column(name = "is_2fa_enabled")
+    private boolean is2faEnabled = false;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -72,6 +110,14 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserAddress> addresses = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserLanguage> userLanguages = new ArrayList<>();
 
     public Set<Role> getRoles() {
         if (roles == null) {

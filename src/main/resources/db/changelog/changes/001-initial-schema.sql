@@ -105,3 +105,65 @@ CREATE TABLE IF NOT EXISTS "verification_documents" (
 );
 
 
+-- changeset antigravity:91
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_2fa_enabled" BOOLEAN DEFAULT false;
+
+-- changeset antigravity:92
+CREATE TABLE IF NOT EXISTS "login_otps" (
+	"id" UUID DEFAULT gen_random_uuid(),
+	"user_id" UUID NOT NULL,
+	"otp" VARCHAR(6) NOT NULL,
+	"expires_at" TIMESTAMP NOT NULL,
+	"used_at" TIMESTAMP,
+	"created_at" TIMESTAMP DEFAULT now(),
+	PRIMARY KEY("id"),
+	CONSTRAINT fk_login_otp_user FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE
+);
+-- changeset antigravity:93
+CREATE TABLE IF NOT EXISTS "verification_otps" (
+	"id" UUID DEFAULT gen_random_uuid(),
+	"token" VARCHAR(64) NOT NULL UNIQUE,
+	"otp" VARCHAR(6) NOT NULL,
+	"type" VARCHAR(10) NOT NULL,
+	"target" VARCHAR(255) NOT NULL,
+	"expires_at" TIMESTAMP NOT NULL,
+	"used_at" TIMESTAMP,
+	"created_at" TIMESTAMP DEFAULT now(),
+	"updated_at" TIMESTAMP DEFAULT now(),
+	"deleted_at" TIMESTAMP DEFAULT NULL,
+	PRIMARY KEY("id")
+);
+
+-- changeset antigravity:94
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "email_verified_at" TIMESTAMP DEFAULT NULL;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "phone_verified_at" TIMESTAMP DEFAULT NULL;
+
+-- changeset antigravity:95
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "google_id" VARCHAR(255) DEFAULT NULL;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "apple_id" VARCHAR(255) DEFAULT NULL;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "profile_image_url" TEXT DEFAULT NULL;
+
+-- changeset antigravity:96
+INSERT INTO roles (name) VALUES ('ADMIN') ON CONFLICT (name) DO NOTHING;
+INSERT INTO permissions (slug) VALUES ('admin-access') ON CONFLICT (slug) DO NOTHING;
+INSERT INTO role_permissions (role_id, permission_id)
+  SELECT r.id, p.id FROM roles r, permissions p
+  WHERE r.name = 'ADMIN' AND p.slug = 'admin-access'
+  ON CONFLICT DO NOTHING;
+
+-- changeset antigravity:97
+INSERT INTO users (email, password_hash, first_name, last_name, user_type, status, is_2fa_enabled)
+VALUES (
+    'admin@helphub.lk',
+    '$2y$12$ttDHEl3vqsZGPzjlBEw2.uBlRwLJU7OFrlpEmVn.4kJR8z05qsE2.',
+    'System',
+    'Admin',
+    'admin',
+    'active',
+    false
+) ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u, roles r 
+WHERE u.email = 'admin@helphub.lk' AND r.name = 'ADMIN'
+ON CONFLICT DO NOTHING;
