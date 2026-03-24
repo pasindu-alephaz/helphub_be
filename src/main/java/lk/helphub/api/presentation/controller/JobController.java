@@ -329,7 +329,7 @@ public class JobController {
     @PreAuthorize("hasAuthority('job_read')")
     public ResponseEntity<ApiResponse<Page<JobResponse>>> getMyPostedJobs(
             Principal principal,
-            @PageableDefault(size = 20) Pageable pageable,
+            @PageableDefault(size = 20, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable,
             @Parameter(description = "Filter by status (OPEN, IN_PROGRESS, COMPLETED, CANCELLED)") @RequestParam(required = false) String status
     ) {
         Page<JobResponse> jobs = jobService.getMyPostedJobs(principal.getName(), pageable, status);
@@ -350,7 +350,7 @@ public class JobController {
     @PreAuthorize("hasAuthority('job_read')")
     public ResponseEntity<ApiResponse<Page<JobResponse>>> getAcceptedJobs(
             Principal principal,
-            @PageableDefault(size = 20) Pageable pageable,
+            @PageableDefault(size = 20, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable,
             @Parameter(description = "Filter by status (OPEN, IN_PROGRESS, COMPLETED, CANCELLED)") @RequestParam(required = false) String status
     ) {
         Page<JobResponse> jobs = jobService.getAcceptedJobs(principal.getName(), pageable, status);

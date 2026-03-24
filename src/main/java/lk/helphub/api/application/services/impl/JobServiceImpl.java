@@ -27,8 +27,11 @@ import lk.helphub.api.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -366,11 +369,10 @@ public class JobServiceImpl implements JobService {
             if (jobType != null && !jobType.trim().isEmpty()) {
                 predicates.add(cb.equal(root.get("jobType"), jobType));
             }
-
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-
-        return jobRepository.findAll(spec, pageable).map(this::mapToJobResponse);
+        Pageable sanitizedPageable = sanitizePageable(pageable);
+        return jobRepository.findAll(spec, sanitizedPageable).map(this::mapToJobResponse);
     }
 
     @Override
@@ -399,11 +401,12 @@ public class JobServiceImpl implements JobService {
     @Override
     @Transactional(readOnly = true)
     public Page<JobResponse> getMyPostedJobs(String userEmail, Pageable pageable, String status) {
+        Pageable sanitizedPageable = sanitizePageable(pageable);
         Page<Job> jobs;
         if (status != null && !status.trim().isEmpty()) {
-            jobs = jobRepository.findByPostedByEmailAndStatusAndDeletedAtIsNull(userEmail, status, pageable);
+            jobs = jobRepository.findByPostedByEmailAndStatusAndDeletedAtIsNull(userEmail, status, sanitizedPageable);
         } else {
-            jobs = jobRepository.findByPostedByEmailAndDeletedAtIsNull(userEmail, pageable);
+            jobs = jobRepository.findByPostedByEmailAndDeletedAtIsNull(userEmail, sanitizedPageable);
         }
         return jobs.map(this::mapToJobResponse);
     }
@@ -411,11 +414,12 @@ public class JobServiceImpl implements JobService {
     @Override
     @Transactional(readOnly = true)
     public Page<JobResponse> getAcceptedJobs(String userEmail, Pageable pageable, String status) {
+        Pageable sanitizedPageable = sanitizePageable(pageable);
         Page<Job> jobs;
         if (status != null && !status.trim().isEmpty()) {
-            jobs = jobRepository.findByAcceptedByEmailAndStatusAndDeletedAtIsNull(userEmail, status, pageable);
+            jobs = jobRepository.findByAcceptedByEmailAndStatusAndDeletedAtIsNull(userEmail, status, sanitizedPageable);
         } else {
-            jobs = jobRepository.findByAcceptedByEmailAndDeletedAtIsNull(userEmail, pageable);
+            jobs = jobRepository.findByAcceptedByEmailAndDeletedAtIsNull(userEmail, sanitizedPageable);
         }
         return jobs.map(this::mapToJobResponse);
     }
@@ -694,5 +698,22 @@ public class JobServiceImpl implements JobService {
         } catch (ParseException e) {
             throw new IllegalArgumentException("Invalid coordinates format. Expected WKT format like POINT(lon lat)", e);
         }
+    }
+
+    private Pageable sanitizePageable(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            return pageable;
+        }
+
+        boolean hasInvalidSort = pageable.getSort().stream()
+                .anyMatch(order -> order.getProperty().contains("[") || order.getProperty().equals("string"));
+
+        if (hasInvalidSort) {
+            log.warn("Invalid sort property detected: {}. Falling back to default sort (createdAt DESC).", pageable.getSort());
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                    Sort.by(Sort.Direction.DESC, "createdAt"));
+        }
+
+        return pageable;
     }
 }
