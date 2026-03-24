@@ -15,7 +15,7 @@ public class SocialIdentity implements Serializable {
     private String email;
     private String googleId;
     private String appleId;
-    private String firstName;
-    private String lastName;
+    private String fullName;
+    private String displayName;
     private String pictureUrl;
 }

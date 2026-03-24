@@ -14,5 +14,8 @@
     <include file="db/changelog/changes/005-refresh-tokens.sql"/>
     <include file="db/changelog/changes/006-profile-enhancements.sql"/>
     <include file="db/changelog/changes/007-seed-permissions.sql"/>
+    <include file="db/changelog/changes/008-profile-refactor.sql"/>
+    <include file="db/changelog/changes/009-seed-seller-role.sql"/>
+
 
 </databaseChangeLog>

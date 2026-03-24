@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Data
 @Schema(description = "Request to obtain a new access token using a refresh token")
-public class TokenRefreshRequest {
+public class RefreshTokenRequest {
 
     @NotBlank(message = "Refresh token is required")
     @Schema(description = "The refresh token issued at login", required = true)

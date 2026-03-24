@@ -2,18 +2,15 @@ package lk.helphub.api.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "User address response")
 public class UserAddressResponse {
@@ -33,6 +30,9 @@ public class UserAddressResponse {
     @Schema(description = "City", example = "Colombo 03")
     private String city;
 
+    @Schema(description = "Country", example = "Sri Lanka")
+    private String country;
+
     @Schema(description = "Postal / zip code", example = "00300")
     private String postalCode;
 
@@ -41,6 +41,9 @@ public class UserAddressResponse {
 
     @Schema(description = "GPS longitude", example = "79.8612")
     private BigDecimal longitude;
+
+    @Schema(description = "Formatted location string", example = "No 123, Galle Road, Colombo 03")
+    private String location;
 
     @Schema(description = "Whether this is the default address for job requests", example = "true")
     private boolean isDefault;

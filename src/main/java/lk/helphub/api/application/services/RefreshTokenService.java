@@ -1,6 +1,5 @@
 package lk.helphub.api.application.services;
 
-import lk.helphub.api.application.dto.TokenRefreshRequest;
 import lk.helphub.api.domain.entity.RefreshToken;
 import lk.helphub.api.domain.entity.User;
 import lk.helphub.api.domain.repository.RefreshTokenRepository;

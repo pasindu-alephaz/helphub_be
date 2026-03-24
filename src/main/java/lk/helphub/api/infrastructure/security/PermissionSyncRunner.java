@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -39,16 +40,17 @@ public class PermissionSyncRunner {
         log.info("Starting automated permission synchronization...");
 
         Set<String> requiredPermissions = new HashSet<>();
-        
+
         // 1. Find all RestControllers
         Map<String, Object> controllers = applicationContext.getBeansWithAnnotation(RestController.class);
 
         for (Object controller : controllers.values()) {
             Class<?> controllerClass = controller.getClass();
-            
-            // Note: Spring wraps classes with CGLIB proxies, so we should try to get the real class
+
+            // Note: Spring wraps classes with CGLIB proxies, so we should try to get the
+            // real class
             if (org.springframework.aop.support.AopUtils.isCglibProxy(controller)) {
-                 controllerClass = org.springframework.aop.support.AopUtils.getTargetClass(controller);
+                controllerClass = org.springframework.aop.support.AopUtils.getTargetClass(controller);
             }
 
             // Check class-level PreAuthorize
@@ -91,21 +93,40 @@ public class PermissionSyncRunner {
 
         log.info("Permission sync completed. Inserted {} new permissions.", addedCount);
 
-        // 3. Automatically assign new permissions to ADMIN role
+        // 3. Automatically assign new permissions to relevant roles
         if (!newlyCreatedPermissions.isEmpty()) {
-            roleRepository.findByName("ADMIN").ifPresentOrElse(adminRole -> {
+            // Admin gets everything
+            roleRepository.findByName("ADMIN").ifPresent(adminRole -> {
                 adminRole.getPermissions().addAll(newlyCreatedPermissions);
                 roleRepository.save(adminRole);
                 log.info("Automatically granted {} new permissions to the ADMIN role.", newlyCreatedPermissions.size());
-            }, () -> log.warn("ADMIN role not found. Could not auto-assign new permissions."));
+            });
+
+            // USER and SELLER get profile permissions
+            Set<Permission> profilePermissions = newlyCreatedPermissions.stream()
+                    .filter(p -> p.getSlug().startsWith("profile_"))
+                    .collect(Collectors.toSet());
+
+            if (!profilePermissions.isEmpty()) {
+                assignPermissionsToRoleIfPresent("USER", profilePermissions);
+                assignPermissionsToRoleIfPresent("SELLER", profilePermissions);
+            }
         }
+    }
+
+    private void assignPermissionsToRoleIfPresent(String roleName, Set<Permission> permissions) {
+        roleRepository.findByName(roleName).ifPresent(role -> {
+            role.getPermissions().addAll(permissions);
+            roleRepository.save(role);
+            log.info("Automatically granted {} profile permissions to the {} role.", permissions.size(), roleName);
+        });
     }
 
     private void extractPermissions(String expression, Set<String> permissions) {
         if (expression == null || expression.isBlank()) {
             return;
         }
-        
+
         Matcher matcher = HAS_AUTHORITY_PATTERN.matcher(expression);
         while (matcher.find()) {
             permissions.add(matcher.group(1));

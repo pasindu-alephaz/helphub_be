@@ -76,15 +76,15 @@ public class ImageUploadService {
         Image imageRecord = Image.builder()
                 .user(user)
                 .url(imageUrl)
-                .imageType("profile")
+                .imageType("PROFILE_IMAGE")
                 .fileSize(outputFile.length())
                 .width(resized.getWidth())
                 .height(resized.getHeight())
                 .build();
         imageRepository.save(imageRecord);
 
-        // Update user's profile image URL
-        user.setProfileImageUrl(imageUrl);
+        // Update user's profile image
+        user.setProfilePicture(imageRecord);
         userRepository.save(user);
 
         log.info("Profile picture uploaded for user {}: {}", user.getId(), imageUrl);

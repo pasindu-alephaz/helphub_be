@@ -16,8 +16,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -33,20 +32,20 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(name = "first_name", length = 100)
-    private String firstName;
+    @Column(name = "full_name", length = 200)
+    private String fullName;
 
-    @Column(name = "last_name", length = 100)
-    private String lastName;
+    @Column(name = "display_name", length = 255)
+    private String displayName;
 
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
-    @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
+    @Column(name = "birthday")
+    private LocalDate birthday;
 
     @Column(columnDefinition = "TEXT")
-    private String bio;
+    private String about;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "identity_type", length = 20)
@@ -55,20 +54,30 @@ public class User {
     @Column(name = "identity_value", length = 100)
     private String identityValue;
 
+    @Builder.Default
     @Column(name = "language_preference", length = 20)
     private String languagePreference = "SINHALA";
 
     @Column(name = "delete_reason", columnDefinition = "TEXT")
     private String deleteReason;
 
-    @Column(name = "avatar_id")
-    private UUID avatarId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_picture_id")
+    private Image profilePicture;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "identity_verification_id")
+    private Image identityVerification;
+
+    @Builder.Default
     @Column(name = "user_type", length = 20)
     private String userType = "customer";
 
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
+
+    @Column(name = "last_verified_at")
+    private LocalDateTime lastVerifiedAt;
 
     @Column(name = "email_verified_at")
     private LocalDateTime emailVerifiedAt;
@@ -76,6 +85,7 @@ public class User {
     @Column(name = "phone_verified_at")
     private LocalDateTime phoneVerifiedAt;
 
+    @Builder.Default
     @Column(length = 20)
     private String status = "active";
 
@@ -85,9 +95,7 @@ public class User {
     @Column(name = "apple_id", length = 255)
     private String appleId;
 
-    @Column(name = "profile_image_url", columnDefinition = "TEXT")
-    private String profileImageUrl;
-
+    @Builder.Default
     @Column(name = "is_2fa_enabled")
     private boolean is2faEnabled = false;
 
@@ -119,10 +127,15 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<UserLanguage> userLanguages = new ArrayList<>();
 
-    public Set<Role> getRoles() {
-        if (roles == null) {
-            roles = new HashSet<>();
-        }
-        return roles;
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserEducation> educationList = new ArrayList<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private UserProfessionalDetail professionalDetail;
+
+    // Added explicitly as some code uses it
+    public List<UserLanguage> getLanguages() {
+        return userLanguages;
     }
 }
