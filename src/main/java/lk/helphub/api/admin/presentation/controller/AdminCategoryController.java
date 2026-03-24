@@ -1,4 +1,4 @@
-package lk.helphub.api.presentation.controller.admin;
+package lk.helphub.api.admin.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
