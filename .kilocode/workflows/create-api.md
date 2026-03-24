@@ -139,6 +139,9 @@ public class ApiResponse<T> {
 - Constructor injection via `@RequiredArgsConstructor`
 - `@Valid` on request body parameters
 - Return `ResponseEntity<>` with appropriate status codes
+- **Security:** Use `@PreAuthorize("hasAuthority('entity_action')")` for all non-public endpoints.
+    - Pattern: `entity_action` (e.g., `job_create`, `job_read`, `job_update`, `job_delete`).
+    - Note: `PermissionSyncRunner` will automatically detect these and sync them to the database.
 
 > After creating the controller, follow `/swagger-setup` to add OpenAPI annotations.
 
@@ -150,6 +153,7 @@ public class ExampleController {
     private final ExampleService exampleService;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('example_create')")
     public ResponseEntity<ApiResponse<Example>> create(@Valid @RequestBody Example dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.<Example>builder()
                 .status(true)
@@ -231,7 +235,11 @@ public class GlobalExceptionHandler {
 
 **Path:** `infrastructure/security/SecurityConfig.java`
 
-If the endpoint is public, add its path to `requestMatchers(...).permitAll()`. Authenticated endpoints need no changes.
+If the endpoint is public, add its path to `requestMatchers(...).permitAll()`.
+
+**Authenticated endpoints:**
+- Use `@PreAuthorize("hasAuthority('entity_action')")` on controller methods.
+- The `PermissionSyncRunner` will automatically create the permission in the DB and assign it to the `ADMIN` role on startup.
 
 ---
 
@@ -259,5 +267,6 @@ Create test files after each API is created to ensure the reliability of the new
 - [ ] `presentation/controllers/{Entity}Controller.java`
 - [ ] `application/exceptions/GlobalExceptionHandler.java` — if missing
 - [ ] `infrastructure/security/SecurityConfig.java` — if public
+- [ ] `@PreAuthorize("hasAuthority('...')")` on controller methods — if authenticated
 - [ ] `/swagger-setup` — OpenAPI annotations & verification
 - [ ] Create test files (Service unit tests, Controller integration tests)
