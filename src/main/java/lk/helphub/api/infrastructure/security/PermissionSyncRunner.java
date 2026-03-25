@@ -111,6 +111,16 @@ public class PermissionSyncRunner {
                 assignPermissionsToRoleIfPresent("USER", profilePermissions);
                 assignPermissionsToRoleIfPresent("SELLER", profilePermissions);
             }
+
+            // USER and PROVIDER get job permissions
+            Set<Permission> jobPermissions = newlyCreatedPermissions.stream()
+                    .filter(p -> p.getSlug().startsWith("job_"))
+                    .collect(Collectors.toSet());
+
+            if (!jobPermissions.isEmpty()) {
+                assignPermissionsToRoleIfPresent("USER", jobPermissions);
+                assignPermissionsToRoleIfPresent("PROVIDER", jobPermissions);
+            }
         }
     }
 
