@@ -14,6 +14,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "provider_profiles")
+@Data
 @Getter
 @Setter
 @NoArgsConstructor

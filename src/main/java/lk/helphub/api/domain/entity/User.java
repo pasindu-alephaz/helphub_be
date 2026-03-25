@@ -16,7 +16,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -137,5 +138,18 @@ public class User {
     // Added explicitly as some code uses it
     public List<UserLanguage> getLanguages() {
         return userLanguages;
+    }
+
+    public String getProfileImageUrl() {
+        return this.profilePicture != null ? this.profilePicture.getUrl() : null;
+    }
+
+    public void setProfileImageUrl(String url) {
+        if (this.profilePicture == null) {
+            this.profilePicture = new Image();
+            this.profilePicture.setUser(this);
+            this.profilePicture.setImageType("PROFILE_PICTURE");
+        }
+        this.profilePicture.setUrl(url);
     }
 }
