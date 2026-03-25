@@ -37,10 +37,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // Find users by email containing (case-insensitive)
     Page<User> findByEmailContainingIgnoreCaseAndDeletedAtIsNull(String email, Pageable pageable);
     
-    // Find users by first name or last name containing (case-insensitive)
+    // Find users by full name containing (case-insensitive)
     @Query("SELECT u FROM User u WHERE " +
-           "(LOWER(u.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
-           "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+           "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :name, '%')) AND " +
            "u.deletedAt IS NULL")
     Page<User> findByNameContainingAndDeletedAtIsNull(@Param("name") String name, Pageable pageable);
     
@@ -50,7 +49,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // Search users by multiple criteria
     @Query("SELECT u FROM User u WHERE " +
            "(:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
-           "(:name IS NULL OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+           "(:name IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
            "(:status IS NULL OR u.status = :status) AND " +
            "(:userType IS NULL OR u.userType = :userType) AND " +
            "u.deletedAt IS NULL")

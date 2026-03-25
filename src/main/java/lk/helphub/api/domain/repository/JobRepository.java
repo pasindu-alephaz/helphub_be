@@ -18,11 +18,10 @@ import org.springframework.data.domain.Pageable;
 @Repository
 public interface JobRepository extends JpaRepository<Job, UUID>, JpaSpecificationExecutor<Job> {
 
-    @Query("SELECT j FROM Job j WHERE " +
-            "j.latitude BETWEEN :minLat AND :maxLat AND " +
-            "j.longitude BETWEEN :minLon AND :maxLon " +
-            "AND (:subcategoryId IS NULL OR j.subcategory.id = :subcategoryId) " +
-            "AND j.status = 'OPEN' AND j.deletedAt IS NULL")
+    @Query(value = "SELECT j.* FROM jobs j WHERE " +
+            "j.location_coordinates && ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326) " +
+            "AND (:subcategoryId IS NULL OR j.subcategory_id = :subcategoryId) " +
+            "AND j.status = 'OPEN' AND j.deleted_at IS NULL", nativeQuery = true)
     List<Job> findNearbyJobs(@Param("minLat") BigDecimal minLat,
             @Param("maxLat") BigDecimal maxLat,
             @Param("minLon") BigDecimal minLon,

@@ -46,8 +46,6 @@ public class BidServiceTest {
         String providerEmail = "provider@example.com";
         Job job = Job.builder().id(jobId).status("OPEN").postedBy(User.builder().email("poster@example.com").build()).build();
         User provider = User.builder().id(UUID.randomUUID()).email(providerEmail).fullName("John Doe").build();
-        BidRequest request = new BidRequest(new BigDecimal("5000.00"), "Proposal");
-        User provider = User.builder().id(UUID.randomUUID()).email(providerEmail).firstName("John").lastName("Doe").build();
         BidRequest request = new BidRequest(new BigDecimal("5000.00"), "Proposal", null);
 
         when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));

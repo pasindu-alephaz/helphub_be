@@ -49,7 +49,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.ParseException;
 
@@ -89,8 +92,7 @@ public class JobServiceImpl implements JobService {
                 .description(request.getDescription())
                 .subcategory(subcategory)
                 .locationAddress(request.getLocationAddress())
-                .latitude(lat)
-                .longitude(lon)
+                .locationCoordinates(pt)
                 .price(request.getPrice())
                 .scheduledAt(request.getScheduledAt())
                 .urgencyFlag(request.getUrgencyFlag())
@@ -237,8 +239,7 @@ public class JobServiceImpl implements JobService {
                 .description(request.getDescription())
                 .subcategory(subcategory)
                 .locationAddress(request.getLocationAddress())
-                .latitude(lat)
-                .longitude(lon)
+                .locationCoordinates(pt)
                 .price(request.getPrice())
                 .urgencyFlag(request.getUrgencyFlag())
                 .jobType(request.getJobType())
@@ -593,8 +594,9 @@ public class JobServiceImpl implements JobService {
 
         if (request.getLocationCoordinates() != null) {
             Point pt = parseLocation(request.getLocationCoordinates());
-            template.setLatitude(pt != null ? BigDecimal.valueOf(pt.getY()) : null);
-            template.setLongitude(pt != null ? BigDecimal.valueOf(pt.getX()) : null);
+            if (pt != null) {
+                template.setLocationCoordinates(pt);
+            }
         }
 
         if (request.getSubcategoryId() != null) {
@@ -632,8 +634,7 @@ public class JobServiceImpl implements JobService {
                 .description(template.getDescription())
                 .subcategory(template.getSubcategory())
                 .locationAddress(template.getLocationAddress())
-                .latitude(template.getLatitude())
-                .longitude(template.getLongitude())
+                .locationCoordinates(template.getLocationCoordinates())
                 .price(template.getPrice())
                 .scheduledAt(request.getScheduledAt())
                 .urgencyFlag(template.getUrgencyFlag())
@@ -669,8 +670,8 @@ public class JobServiceImpl implements JobService {
                 .description(job.getDescription())
                 .subcategoryId(job.getSubcategory() != null ? job.getSubcategory().getId() : null)
                 .locationAddress(job.getLocationAddress())
-                .locationCoordinates(job.getLongitude() != null && job.getLatitude() != null
-                        ? "POINT (" + job.getLongitude() + " " + job.getLatitude() + ")"
+                .locationCoordinates(job.getLocationCoordinates() != null
+                        ? job.getLocationCoordinates().toText()
                         : null)
                 .price(job.getPrice())
                 .scheduledAt(job.getScheduledAt())
@@ -698,8 +699,8 @@ public class JobServiceImpl implements JobService {
                 .description(template.getDescription())
                 .subcategoryId(template.getSubcategory() != null ? template.getSubcategory().getId() : null)
                 .locationAddress(template.getLocationAddress())
-                .locationCoordinates(template.getLongitude() != null && template.getLatitude() != null
-                        ? "POINT (" + template.getLongitude() + " " + template.getLatitude() + ")"
+                .locationCoordinates(template.getLocationCoordinates() != null
+                        ? template.getLocationCoordinates().toText()
                         : null)
                 .price(template.getPrice())
                 .urgencyFlag(template.getUrgencyFlag())

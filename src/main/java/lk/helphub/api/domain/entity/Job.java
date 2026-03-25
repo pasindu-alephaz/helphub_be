@@ -41,11 +41,8 @@ public class Job {
     @Column(name = "location_address", nullable = false, columnDefinition = "TEXT")
     private String locationAddress;
 
-    @Column(precision = 10, scale = 8)
-    private BigDecimal latitude;
-
-    @Column(precision = 11, scale = 8)
-    private BigDecimal longitude;
+    @Column(name = "location_coordinates", columnDefinition = "geometry(Point,4326)")
+    private Point locationCoordinates;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
@@ -103,12 +100,4 @@ public class Job {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    @Transient
-    public Point getLocationCoordinates() {
-        if (latitude == null || longitude == null) {
-            return null;
-        }
-        GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
-        return factory.createPoint(new Coordinate(longitude.doubleValue(), latitude.doubleValue()));
-    }
 }

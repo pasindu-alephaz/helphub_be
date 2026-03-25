@@ -52,14 +52,16 @@ public class AdminUserServiceImpl implements AdminUserService {
         User user = User.builder()
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
+                .fullName(request.getFirstName() != null && request.getLastName() != null 
+                    ? request.getFirstName() + " " + request.getLastName() 
+                    : request.getFirstName() != null ? request.getFirstName() : request.getLastName())
+                .displayName(request.getFirstName())
                 .phoneNumber(request.getPhoneNumber())
-                .dateOfBirth(request.getDateOfBirth())
+                .birthday(request.getDateOfBirth())
                 .identityType(request.getIdentityType())
                 .identityValue(request.getIdentityValue())
                 .languagePreference(request.getLanguagePreference() != null ? request.getLanguagePreference() : "SINHALA")
-                .bio(request.getBio())
+                .about(request.getBio())
                 .userType(request.getUserType() != null ? request.getUserType() : "customer")
                 .status(request.getStatus() != null ? request.getStatus() : "active")
                 .build();
@@ -114,11 +116,13 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
 
         // Update basic fields
-        if (request.getFirstName() != null) {
-            user.setFirstName(request.getFirstName());
-        }
-        if (request.getLastName() != null) {
-            user.setLastName(request.getLastName());
+        if (request.getFirstName() != null || request.getLastName() != null) {
+            String currentFullName = user.getFullName() != null ? user.getFullName() : "";
+            String[] nameParts = currentFullName.split(" ", 2);
+            String firstName = request.getFirstName() != null ? request.getFirstName() : nameParts[0];
+            String lastName = request.getLastName() != null ? request.getLastName() : (nameParts.length > 1 ? nameParts[1] : "");
+            user.setFullName(firstName + " " + lastName);
+            user.setDisplayName(firstName);
         }
         if (request.getPhoneNumber() != null) {
             if (!request.getPhoneNumber().equals(user.getPhoneNumber()) && 
@@ -128,7 +132,7 @@ public class AdminUserServiceImpl implements AdminUserService {
             user.setPhoneNumber(request.getPhoneNumber());
         }
         if (request.getDateOfBirth() != null) {
-            user.setDateOfBirth(request.getDateOfBirth());
+            user.setBirthday(request.getDateOfBirth());
         }
         if (request.getIdentityType() != null) {
             user.setIdentityType(request.getIdentityType());
@@ -140,7 +144,7 @@ public class AdminUserServiceImpl implements AdminUserService {
             user.setLanguagePreference(request.getLanguagePreference());
         }
         if (request.getBio() != null) {
-            user.setBio(request.getBio());
+            user.setAbout(request.getBio());
         }
         if (request.getProfileImageUrl() != null) {
             user.setProfileImageUrl(request.getProfileImageUrl());
@@ -264,17 +268,25 @@ public class AdminUserServiceImpl implements AdminUserService {
                         .collect(Collectors.toList())
                 : List.of();
 
+        String firstName = "";
+        String lastName = "";
+        if (user.getFullName() != null) {
+            String[] nameParts = user.getFullName().split(" ", 2);
+            firstName = nameParts[0];
+            lastName = nameParts.length > 1 ? nameParts[1] : "";
+        }
+        
         return AdminUserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
+                .firstName(firstName)
+                .lastName(lastName)
                 .phoneNumber(user.getPhoneNumber())
-                .dateOfBirth(user.getDateOfBirth())
+                .dateOfBirth(user.getBirthday())
                 .identityType(user.getIdentityType())
                 .identityValue(user.getIdentityValue())
                 .languagePreference(user.getLanguagePreference())
-                .bio(user.getBio())
+                .bio(user.getAbout())
                 .profileImageUrl(user.getProfileImageUrl())
                 .userType(user.getUserType())
                 .status(user.getStatus())
