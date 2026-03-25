@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.locationtech.jts.geom.Point;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,11 +39,8 @@ public class JobTemplate {
     @Column(name = "location_address", nullable = false, columnDefinition = "TEXT")
     private String locationAddress;
 
-    @Column(precision = 10, scale = 8)
-    private BigDecimal latitude;
-
-    @Column(precision = 11, scale = 8)
-    private BigDecimal longitude;
+    @Column(name = "location_coordinates", columnDefinition = "geometry(Point,4326)")
+    private Point locationCoordinates;
 
     @Column(name = "job_type", length = 20)
     private String jobType;

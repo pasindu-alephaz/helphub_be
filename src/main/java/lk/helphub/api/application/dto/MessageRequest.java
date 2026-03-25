@@ -25,4 +25,7 @@ public class MessageRequest {
 
     @Schema(description = "Suggested schedule update (optional)", example = "2024-12-01T10:00:00")
     private LocalDateTime suggestedScheduledAt;
+
+    @Schema(description = "Suggested availability duration update (optional)", example = "3 hours")
+    private String suggestedAvailabilityDuration;
 }

@@ -60,7 +60,7 @@ public class AdminAuthService {
         }
 
         // If 2FA is enabled, send OTP and return challenge instead of JWT
-        if (user.is2faEnabled()) {
+        if (user.isTwoFactorEnabled()) {
             // Invalidate any previous unused OTPs
             List<LoginOtp> previous = loginOtpRepository.findByUserAndUsedAtIsNull(user);
             for (LoginOtp otp : previous) {

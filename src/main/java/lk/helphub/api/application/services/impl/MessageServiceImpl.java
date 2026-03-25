@@ -58,7 +58,8 @@ public class MessageServiceImpl implements MessageService {
                 .content(request.getContent())
                 .suggestedPrice(request.getSuggestedPrice())
                 .suggestedScheduledAt(request.getSuggestedScheduledAt())
-                .suggestionStatus(request.getSuggestedPrice() != null || request.getSuggestedScheduledAt() != null ? "PENDING" : null)
+                .suggestedAvailabilityDuration(request.getSuggestedAvailabilityDuration())
+                .suggestionStatus(request.getSuggestedPrice() != null || request.getSuggestedScheduledAt() != null || request.getSuggestedAvailabilityDuration() != null ? "PENDING" : null)
                 .build();
 
         Message savedMessage = messageRepository.save(message);
@@ -113,6 +114,9 @@ public class MessageServiceImpl implements MessageService {
         if (message.getSuggestedScheduledAt() != null) {
             job.setScheduledAt(message.getSuggestedScheduledAt());
         }
+        if (message.getSuggestedAvailabilityDuration() != null) {
+            job.setJobAvailabilityDuration(message.getSuggestedAvailabilityDuration());
+        }
 
         message.setSuggestionStatus("ACCEPTED");
         messageRepository.save(message);
@@ -130,6 +134,7 @@ public class MessageServiceImpl implements MessageService {
                 .content(message.getContent())
                 .suggestedPrice(message.getSuggestedPrice())
                 .suggestedScheduledAt(message.getSuggestedScheduledAt())
+                .suggestedAvailabilityDuration(message.getSuggestedAvailabilityDuration())
                 .suggestionStatus(message.getSuggestionStatus())
                 .createdAt(message.getCreatedAt())
                 .build();

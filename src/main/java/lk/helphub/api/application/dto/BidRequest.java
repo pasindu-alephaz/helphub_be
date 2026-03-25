@@ -25,4 +25,7 @@ public class BidRequest {
     @Schema(description = "Proposal message from the provider", example = "I can do this job efficiently and have 5 years of experience.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "Proposal is required")
     private String proposal;
+
+    @Schema(description = "Provider's availability duration for this job", example = "2 hours", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String jobAvailabilityDuration;
 }

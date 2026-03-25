@@ -41,6 +41,9 @@ public class Message {
     @Column(name = "suggestion_status", length = 20)
     private String suggestionStatus; // PENDING, ACCEPTED, REJECTED
 
+    @Column(name = "suggested_availability_duration", length = 50)
+    private String suggestedAvailabilityDuration;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
