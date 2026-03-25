@@ -36,9 +36,12 @@ public class Bid {
     @Column(columnDefinition = "TEXT")
     private String proposal;
 
+    @Column(name = "job_availability_duration", length = 50)
+    private String jobAvailabilityDuration;
+
     @Builder.Default
     @Column(length = 20, nullable = false)
-    private String status = "PENDING"; // PENDING, ACCEPTED, REJECTED, WITHDRAWN
+    private String status = "PENDING"; 
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

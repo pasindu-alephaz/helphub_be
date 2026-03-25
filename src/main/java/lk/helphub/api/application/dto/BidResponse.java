@@ -22,6 +22,7 @@ public class BidResponse {
     private String providerName;
     private BigDecimal amount;
     private String proposal;
+    private String jobAvailabilityDuration;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

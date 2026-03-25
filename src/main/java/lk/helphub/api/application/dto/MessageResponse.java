@@ -22,6 +22,7 @@ public class MessageResponse {
     private String content;
     private BigDecimal suggestedPrice;
     private LocalDateTime suggestedScheduledAt;
+    private String suggestedAvailabilityDuration;
     private String suggestionStatus;
     private LocalDateTime createdAt;
 }

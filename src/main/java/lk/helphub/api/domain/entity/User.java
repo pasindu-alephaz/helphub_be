@@ -89,7 +89,7 @@ public class User {
     private String profileImageUrl;
 
     @Column(name = "is_2fa_enabled")
-    private boolean is2faEnabled = false;
+    private boolean twoFactorEnabled = false;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

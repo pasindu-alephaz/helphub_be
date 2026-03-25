@@ -46,7 +46,7 @@ public class MessageServiceTest {
         String email = "poster@example.com";
         Job job = Job.builder().id(jobId).postedBy(User.builder().email(email).build()).build();
         User sender = User.builder().firstName("Admin").lastName("User").email(email).build();
-        MessageRequest request = new MessageRequest("Hello", null, null);
+        MessageRequest request = new MessageRequest("Hello", null, null, null);
 
         when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(sender));

@@ -58,6 +58,7 @@ public class BidServiceImpl implements BidService {
                 .provider(provider)
                 .amount(request.getAmount())
                 .proposal(request.getProposal())
+                .jobAvailabilityDuration(request.getJobAvailabilityDuration())
                 .status("PENDING")
                 .build();
 
@@ -84,6 +85,7 @@ public class BidServiceImpl implements BidService {
 
         bid.setAmount(request.getAmount());
         bid.setProposal(request.getProposal());
+        bid.setJobAvailabilityDuration(request.getJobAvailabilityDuration());
 
         Bid savedBid = bidRepository.save(bid);
         return mapToBidResponse(savedBid);
@@ -157,6 +159,7 @@ public class BidServiceImpl implements BidService {
                 .providerName(bid.getProvider().getFirstName() + " " + bid.getProvider().getLastName())
                 .amount(bid.getAmount())
                 .proposal(bid.getProposal())
+                .jobAvailabilityDuration(bid.getJobAvailabilityDuration())
                 .status(bid.getStatus())
                 .createdAt(bid.getCreatedAt())
                 .updatedAt(bid.getUpdatedAt())

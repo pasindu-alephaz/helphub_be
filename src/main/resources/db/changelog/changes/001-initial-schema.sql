@@ -1,5 +1,8 @@
 -- liquibase formatted sql
 
+-- changeset antigravity:0
+CREATE EXTENSION IF NOT EXISTS postgis;
+
 -- changeset antigravity:1
 CREATE TABLE IF NOT EXISTS "users" (
 	"id" UUID DEFAULT gen_random_uuid(),
@@ -105,10 +108,10 @@ CREATE TABLE IF NOT EXISTS "verification_documents" (
 );
 
 
--- changeset antigravity:91
+-- changeset antigravity:9
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_2fa_enabled" BOOLEAN DEFAULT false;
 
--- changeset antigravity:92
+-- changeset antigravity:10
 CREATE TABLE IF NOT EXISTS "login_otps" (
 	"id" UUID DEFAULT gen_random_uuid(),
 	"user_id" UUID NOT NULL,
@@ -119,7 +122,7 @@ CREATE TABLE IF NOT EXISTS "login_otps" (
 	PRIMARY KEY("id"),
 	CONSTRAINT fk_login_otp_user FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE
 );
--- changeset antigravity:93
+-- changeset antigravity:11
 CREATE TABLE IF NOT EXISTS "verification_otps" (
 	"id" UUID DEFAULT gen_random_uuid(),
 	"token" VARCHAR(64) NOT NULL UNIQUE,
@@ -134,16 +137,16 @@ CREATE TABLE IF NOT EXISTS "verification_otps" (
 	PRIMARY KEY("id")
 );
 
--- changeset antigravity:94
+-- changeset antigravity:12
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "email_verified_at" TIMESTAMP DEFAULT NULL;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "phone_verified_at" TIMESTAMP DEFAULT NULL;
 
--- changeset antigravity:95
+-- changeset antigravity:13
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "google_id" VARCHAR(255) DEFAULT NULL;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "apple_id" VARCHAR(255) DEFAULT NULL;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "profile_image_url" TEXT DEFAULT NULL;
 
--- changeset antigravity:96
+-- changeset antigravity:14
 INSERT INTO roles (name) VALUES ('ADMIN') ON CONFLICT (name) DO NOTHING;
 INSERT INTO permissions (slug) VALUES ('admin-access') ON CONFLICT (slug) DO NOTHING;
 INSERT INTO role_permissions (role_id, permission_id)
@@ -151,7 +154,7 @@ INSERT INTO role_permissions (role_id, permission_id)
   WHERE r.name = 'ADMIN' AND p.slug = 'admin-access'
   ON CONFLICT DO NOTHING;
 
--- changeset antigravity:97
+-- changeset antigravity:15
 INSERT INTO users (email, password_hash, first_name, last_name, user_type, status, is_2fa_enabled)
 VALUES (
     'admin@helphub.lk',
