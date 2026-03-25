@@ -1,14 +1,22 @@
 package lk.helphub.api.application.services;
 
-import lk.helphub.api.application.dto.*;
+import lk.helphub.api.application.dto.AuthResponse;
+import lk.helphub.api.application.dto.PhoneInitRequest;
+import lk.helphub.api.application.dto.PhoneOtpVerifyRequest;
+import lk.helphub.api.application.dto.CompleteRegistrationRequest;
+import lk.helphub.api.application.dto.SocialIdentity;
+import lk.helphub.api.application.dto.LoginRequest;
+import lk.helphub.api.application.dto.RefreshTokenRequest;
 import lk.helphub.api.domain.entity.PhoneOtp;
 import lk.helphub.api.domain.entity.RefreshToken;
 import lk.helphub.api.domain.entity.Role;
 import lk.helphub.api.domain.entity.User;
 import lk.helphub.api.domain.enums.PhoneOtpPurpose;
+import lk.helphub.api.domain.repository.ImageRepository;
 import lk.helphub.api.domain.repository.PhoneOtpRepository;
 import lk.helphub.api.domain.repository.RoleRepository;
 import lk.helphub.api.domain.repository.UserRepository;
+import lk.helphub.api.domain.entity.Image;
 import lk.helphub.api.infrastructure.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +45,7 @@ public class AuthService {
     private final SmsService smsService;
     private final SocialAuthService socialAuthService;
     private final RefreshTokenService refreshTokenService;
+    private final ImageRepository imageRepository;
 
     @Transactional
     public AuthResponse sendPhoneOtp(PhoneInitRequest request) {
@@ -192,11 +201,11 @@ public class AuthService {
                 .orElseGet(() -> roleRepository.save(Role.builder().name("USER").build()));
 
         User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
+                .fullName(request.getFullName())
+                .displayName(request.getDisplayName())
                 .phoneNumber(phoneNumber)
                 .email(email)
-                .dateOfBirth(request.getDateOfBirth())
+                .birthday(request.getDateOfBirth())
                 .passwordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
                 .status("active")
                 .userType("customer")
@@ -204,8 +213,16 @@ public class AuthService {
                 .phoneVerifiedAt(LocalDateTime.now())
                 .googleId(socialIdentity != null ? socialIdentity.getGoogleId() : null)
                 .appleId(socialIdentity != null ? socialIdentity.getAppleId() : null)
-                .profileImageUrl(socialIdentity != null ? socialIdentity.getPictureUrl() : null)
                 .build();
+
+        if (socialIdentity != null && socialIdentity.getPictureUrl() != null) {
+            Image profilePic = imageRepository.save(Image.builder()
+                    .user(user)
+                    .url(socialIdentity.getPictureUrl())
+                    .imageType("PROFILE_IMAGE")
+                    .build());
+            user.setProfilePicture(profilePic);
+        }
         
         if (socialIdentity != null) {
             user.setEmailVerifiedAt(LocalDateTime.now());

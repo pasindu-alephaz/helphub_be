@@ -11,4 +11,5 @@ import java.util.UUID;
 @Repository
 public interface JobTemplateRepository extends JpaRepository<JobTemplate, UUID> {
     List<JobTemplate> findAllByUser(User user);
+    List<JobTemplate> findByUserEmail(String email);
 }

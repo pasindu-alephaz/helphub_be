@@ -4,16 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lk.helphub.api.domain.enums.LanguageProficiency;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Schema(description = "Request to add or update a communication language preference")
 public class UserLanguageRequest {
 
     @Schema(description = "BCP-47 language code (e.g. 'si', 'ta', 'en') or empty for custom entries", example = "si")
@@ -28,4 +19,39 @@ public class UserLanguageRequest {
     @Schema(description = "Proficiency level: BASIC, CONVERSATIONAL, FLUENT, NATIVE",
             example = "NATIVE", requiredMode = Schema.RequiredMode.REQUIRED)
     private LanguageProficiency proficiency;
+
+    public UserLanguageRequest() {}
+
+    public UserLanguageRequest(String languageCode, String languageName, LanguageProficiency proficiency) {
+        this.languageCode = languageCode;
+        this.languageName = languageName;
+        this.proficiency = proficiency;
+    }
+
+    public String getLanguageCode() { return languageCode; }
+    public void setLanguageCode(String languageCode) { this.languageCode = languageCode; }
+
+    public String getLanguageName() { return languageName; }
+    public void setLanguageName(String languageName) { this.languageName = languageName; }
+
+    public LanguageProficiency getProficiency() { return proficiency; }
+    public void setProficiency(LanguageProficiency proficiency) { this.proficiency = proficiency; }
+
+    public static UserLanguageRequestBuilder builder() {
+        return new UserLanguageRequestBuilder();
+    }
+
+    public static class UserLanguageRequestBuilder {
+        private String languageCode;
+        private String languageName;
+        private LanguageProficiency proficiency;
+
+        public UserLanguageRequestBuilder languageCode(String languageCode) { this.languageCode = languageCode; return this; }
+        public UserLanguageRequestBuilder languageName(String languageName) { this.languageName = languageName; return this; }
+        public UserLanguageRequestBuilder proficiency(LanguageProficiency proficiency) { this.proficiency = proficiency; return this; }
+
+        public UserLanguageRequest build() {
+            return new UserLanguageRequest(languageCode, languageName, proficiency);
+        }
+    }
 }

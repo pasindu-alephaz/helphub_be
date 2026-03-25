@@ -49,24 +49,22 @@ public class SocialAuthServiceImpl implements SocialAuthService {
             if (idToken != null) {
                 GoogleIdToken.Payload payload = idToken.getPayload();
 
+                String givenName = (String) payload.get("given_name");
+                String familyName = (String) payload.get("family_name");
+                String name = (String) payload.get("name");
+
                 SocialIdentity identity = SocialIdentity.builder()
                         .email(payload.getEmail())
                         .googleId(payload.getSubject())
-                        .firstName((String) payload.get("given_name"))
-                        .lastName((String) payload.get("family_name"))
+                        .fullName(name != null ? name : (givenName + " " + (familyName != null ? familyName : "")).trim())
+                        .displayName(givenName != null ? givenName : name)
                         .pictureUrl((String) payload.get("picture"))
                         .build();
 
-                // Fallback for names
-                if (identity.getFirstName() == null) identity.setFirstName((String) payload.get("name"));
-                if (identity.getLastName() == null) identity.setLastName("");
-
                 // Override from request if provided
                 if (request.getFirstName() != null && !request.getFirstName().isBlank()) {
-                    identity.setFirstName(request.getFirstName());
-                }
-                if (request.getLastName() != null && !request.getLastName().isBlank()) {
-                    identity.setLastName(request.getLastName());
+                    identity.setFullName(request.getFirstName() + (request.getLastName() != null ? " " + request.getLastName() : ""));
+                    identity.setDisplayName(request.getFirstName());
                 }
 
                 String pendingToken = UUID.randomUUID().toString();
@@ -121,8 +119,8 @@ public class SocialAuthServiceImpl implements SocialAuthService {
             SocialIdentity identity = SocialIdentity.builder()
                     .appleId(claims.getSubject())
                     .email(claims.get("email", String.class))
-                    .firstName(request.getFirstName() != null ? request.getFirstName() : "Apple")
-                    .lastName(request.getLastName() != null ? request.getLastName() : "User")
+                    .fullName(request.getFirstName() != null ? (request.getFirstName() + (request.getLastName() != null ? " " + request.getLastName() : "")) : "Apple User")
+                    .displayName(request.getFirstName() != null ? request.getFirstName() : "Apple")
                     .build();
 
             String pendingToken = UUID.randomUUID().toString();

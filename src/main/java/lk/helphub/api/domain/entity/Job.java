@@ -4,13 +4,16 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import org.locationtech.jts.geom.Point;
 
 @Entity
 @Table(name = "jobs")
@@ -38,8 +41,11 @@ public class Job {
     @Column(name = "location_address", nullable = false, columnDefinition = "TEXT")
     private String locationAddress;
 
-    @Column(name = "location_coordinates", columnDefinition = "geometry(Point,4326)")
-    private Point locationCoordinates;
+    @Column(precision = 10, scale = 8)
+    private BigDecimal latitude;
+
+    @Column(precision = 11, scale = 8)
+    private BigDecimal longitude;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
@@ -96,4 +102,13 @@ public class Job {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Transient
+    public Point getLocationCoordinates() {
+        if (latitude == null || longitude == null) {
+            return null;
+        }
+        GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
+        return factory.createPoint(new Coordinate(longitude.doubleValue(), latitude.doubleValue()));
+    }
 }

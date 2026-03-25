@@ -24,6 +24,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.WKTReader;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -115,7 +117,8 @@ public class JobServiceTest {
         job.setId(UUID.randomUUID());
         job.setTitle("Nearby Job");
 
-        when(jobRepository.findNearbyJobs(any(Point.class), anyDouble(), nullable(UUID.class)))
+        when(jobRepository.findNearbyJobs(any(BigDecimal.class), any(BigDecimal.class), any(BigDecimal.class),
+                any(BigDecimal.class), nullable(UUID.class)))
                 .thenReturn(List.of(job));
 
         List<JobResponse> result = jobService.getNearbyJobs("POINT(79.0 6.0)", 10.0, null);

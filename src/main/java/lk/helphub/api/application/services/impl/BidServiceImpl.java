@@ -156,7 +156,7 @@ public class BidServiceImpl implements BidService {
                 .id(bid.getId())
                 .jobId(bid.getJob().getId())
                 .providerId(bid.getProvider().getId())
-                .providerName(bid.getProvider().getFirstName() + " " + bid.getProvider().getLastName())
+                .providerName(bid.getProvider().getFullName())
                 .amount(bid.getAmount())
                 .proposal(bid.getProposal())
                 .jobAvailabilityDuration(bid.getJobAvailabilityDuration())

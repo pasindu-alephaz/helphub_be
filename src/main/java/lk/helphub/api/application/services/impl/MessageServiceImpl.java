@@ -130,7 +130,7 @@ public class MessageServiceImpl implements MessageService {
                 .id(message.getId())
                 .jobId(message.getJob().getId())
                 .senderId(message.getSender().getId())
-                .senderName(message.getSender().getFirstName() + " " + message.getSender().getLastName())
+                .senderName(message.getSender().getFullName())
                 .content(message.getContent())
                 .suggestedPrice(message.getSuggestedPrice())
                 .suggestedScheduledAt(message.getSuggestedScheduledAt())
