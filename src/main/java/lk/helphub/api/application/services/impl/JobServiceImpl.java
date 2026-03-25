@@ -549,6 +549,106 @@ public class JobServiceImpl implements JobService {
         return mapToJobResponse(savedJob);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<JobTemplateResponse> getMyTemplates(String userEmail) {
+        return jobTemplateRepository.findByUserEmail(userEmail).stream()
+                .map(this::mapToJobTemplateResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JobTemplateResponse getTemplateById(UUID templateId, String userEmail) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to access this template");
+        }
+
+        return mapToJobTemplateResponse(template);
+    }
+
+    @Override
+    public JobTemplateResponse updateTemplate(UUID templateId, String userEmail, JobTemplateUpdateRequest request) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to update this template");
+        }
+
+        if (request.getTemplateName() != null) template.setTemplateName(request.getTemplateName());
+        if (request.getTitle() != null) template.setTitle(request.getTitle());
+        if (request.getDescription() != null) template.setDescription(request.getDescription());
+        if (request.getLocationAddress() != null) template.setLocationAddress(request.getLocationAddress());
+        if (request.getPrice() != null) template.setPrice(request.getPrice());
+        if (request.getUrgencyFlag() != null) template.setUrgencyFlag(request.getUrgencyFlag());
+        if (request.getJobType() != null) template.setJobType(request.getJobType());
+        if (request.getPreferredPrice() != null) template.setPreferredPrice(request.getPreferredPrice());
+        if (request.getJobAvailabilityDuration() != null) template.setJobAvailabilityDuration(request.getJobAvailabilityDuration());
+        if (request.getJobPlan() != null) template.setJobPlan(request.getJobPlan());
+        if (request.getPreferredLanguage() != null) template.setPreferredLanguage(request.getPreferredLanguage());
+
+        if (request.getLocationCoordinates() != null) {
+            Point pt = parseLocation(request.getLocationCoordinates());
+            template.setLatitude(pt != null ? BigDecimal.valueOf(pt.getY()) : null);
+            template.setLongitude(pt != null ? BigDecimal.valueOf(pt.getX()) : null);
+        }
+
+        if (request.getSubcategoryId() != null) {
+            ServiceCategory subcategory = serviceCategoryRepository.findById(request.getSubcategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
+            template.setSubcategory(subcategory);
+        }
+
+        return mapToJobTemplateResponse(jobTemplateRepository.save(template));
+    }
+
+    @Override
+    public void deleteTemplate(UUID templateId, String userEmail) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to delete this template");
+        }
+
+        jobTemplateRepository.delete(template);
+    }
+
+    @Override
+    public JobResponse createJobFromTemplate(UUID templateId, String userEmail, JobFromTemplateRequest request) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to use this template");
+        }
+
+        Job job = Job.builder()
+                .title(template.getTitle())
+                .description(template.getDescription())
+                .subcategory(template.getSubcategory())
+                .locationAddress(template.getLocationAddress())
+                .latitude(template.getLatitude())
+                .longitude(template.getLongitude())
+                .price(template.getPrice())
+                .scheduledAt(request.getScheduledAt())
+                .urgencyFlag(template.getUrgencyFlag())
+                .jobType(template.getJobType())
+                .preferredPrice(template.getPreferredPrice())
+                .jobAvailabilityDuration(template.getJobAvailabilityDuration())
+                .jobPlan(template.getJobPlan())
+                .preferredLanguage(template.getPreferredLanguage())
+                .postedBy(template.getUser())
+                .status("OPEN")
+                .build();
+
+        return mapToJobResponse(jobRepository.save(job));
+    }
+
     private JobResponse mapToJobResponse(Job job) {
         List<String> imageUrls = new ArrayList<>();
         List<ImageResponse> images = new ArrayList<>();

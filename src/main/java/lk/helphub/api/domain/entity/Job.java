@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -98,4 +102,13 @@ public class Job {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Transient
+    public Point getLocationCoordinates() {
+        if (latitude == null || longitude == null) {
+            return null;
+        }
+        GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
+        return factory.createPoint(new Coordinate(longitude.doubleValue(), latitude.doubleValue()));
+    }
 }

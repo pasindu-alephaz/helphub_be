@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,7 +45,7 @@ public class BidServiceTest {
         UUID jobId = UUID.randomUUID();
         String providerEmail = "provider@example.com";
         Job job = Job.builder().id(jobId).status("OPEN").postedBy(User.builder().email("poster@example.com").build()).build();
-        User provider = User.builder().id(UUID.randomUUID()).email(providerEmail).firstName("John").lastName("Doe").build();
+        User provider = User.builder().id(UUID.randomUUID()).email(providerEmail).fullName("John Doe").build();
         BidRequest request = new BidRequest(new BigDecimal("5000.00"), "Proposal");
 
         when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
@@ -64,9 +65,9 @@ public class BidServiceTest {
         UUID jobId = UUID.randomUUID();
         UUID bidId = UUID.randomUUID();
         String posterEmail = "poster@example.com";
-        User poster = User.builder().email(posterEmail).build();
+        User sender = User.builder().fullName("Admin User").email(posterEmail).build();
         User provider = User.builder().id(UUID.randomUUID()).build();
-        Job job = Job.builder().id(jobId).status("OPEN").postedBy(poster).build();
+        Job job = Job.builder().id(jobId).status("OPEN").postedBy(sender).build();
         Bid bid = Bid.builder().id(bidId).job(job).provider(provider).amount(new BigDecimal("4500.00")).status("PENDING").build();
 
         when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));

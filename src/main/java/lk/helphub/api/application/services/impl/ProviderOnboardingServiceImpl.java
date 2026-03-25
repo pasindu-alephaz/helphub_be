@@ -239,7 +239,7 @@ public class ProviderOnboardingServiceImpl implements ProviderOnboardingService 
 
         return ProviderProfileResponse.builder()
                 .id(profile.getId())
-                .name(user.getFirstName() + " " + user.getLastName())
+                .name(user.getFullName())
                 .businessName(profile.getBusinessName())
                 .profileImageUrl(user.getProfileImageUrl())
                 .verificationStatus(profile.getVerificationStatus())
