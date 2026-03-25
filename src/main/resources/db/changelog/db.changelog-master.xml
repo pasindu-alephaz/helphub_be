@@ -20,5 +20,8 @@
     <include file="db/changelog/changes/010-provider-refinements.sql"/>
     <include file="db/changelog/changes/011-provider-services-availability.sql"/>
     <include file="db/changelog/changes/012-multi-image-support.sql"/>
+    <include file="db/changelog/changes/008-profile-refactor.sql"/>
+    <include file="db/changelog/changes/009-seed-seller-role.sql"/>
+
 
 </databaseChangeLog>

@@ -1,9 +1,5 @@
 -- liquibase formatted sql
 
--- changeset antigravity:31
-CREATE SCHEMA IF NOT EXISTS extensions;
-CREATE EXTENSION IF NOT EXISTS postgis SCHEMA extensions;
-
 -- changeset antigravity:32
 -- validCheckSum: 9:73da06b091bda6aa75c0082e3ce5860f
 CREATE TABLE IF NOT EXISTS "jobs" (
@@ -12,7 +8,8 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 	"description" VARCHAR(500) NOT NULL,
 	"subcategory_id" UUID,
 	"location_address" TEXT NOT NULL,
-	"location_coordinates" geometry(Point,4326) NOT NULL,
+	"latitude" DECIMAL(10, 8),
+	"longitude" DECIMAL(11, 8),
 	"price" DECIMAL(10,2),
 	"scheduled_at" TIMESTAMP,
 	"urgency_flag" VARCHAR(20),
@@ -43,7 +40,8 @@ CREATE TABLE IF NOT EXISTS "job_templates" (
     "description" VARCHAR(500) NOT NULL,
     "subcategory_id" UUID,
     "location_address" TEXT NOT NULL,
-    "location_coordinates" geometry(Point,4326) NOT NULL,
+    "latitude" DECIMAL(10, 8),
+    "longitude" DECIMAL(11, 8),
     "price" DECIMAL(10, 2),
     "urgency_flag" VARCHAR(20),
     "job_type" VARCHAR(20),

@@ -107,7 +107,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     @Operation(summary = "Refresh access token", description = "Returns a new short-lived access token given a valid refresh token")
-    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         RefreshToken refreshToken = refreshTokenService.validateRefreshToken(request.getRefreshToken());
         String identifier = refreshToken.getUser().getEmail() != null && !refreshToken.getUser().getEmail().isBlank()
                 ? refreshToken.getUser().getEmail()
@@ -130,7 +130,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     @Operation(summary = "Logout", description = "Revokes the provided refresh token, logging the user out from that session")
-    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody TokenRefreshRequest request) {
+    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody RefreshTokenRequest request) {
         refreshTokenService.revokeToken(request.getRefreshToken());
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .status(true)

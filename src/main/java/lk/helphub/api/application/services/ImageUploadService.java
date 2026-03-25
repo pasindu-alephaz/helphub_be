@@ -92,6 +92,11 @@ public class ImageUploadService {
                 .build();
         imageRepository.save(imageRecord);
 
+        // Update user's profile image
+        user.setProfilePicture(imageRecord);
+        userRepository.save(user);
+
+        log.info("Profile picture uploaded for user {}: {}", user.getId(), imageUrl);
         return imageUrl;
     }
 
