@@ -42,8 +42,11 @@ You can also run the application and its database using Docker.
 3.  **Access the application**:
     - Backend API: [http://localhost:8080](http://localhost:8080)
     - Swagger UI: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+    - Database Viewer (Adminer): [http://localhost:8081](http://localhost:8081)
     - PostgreSQL: `localhost:5433` (Dockerized) | `localhost:5432` (Local)
-      (Database credentials: `postgres` / `root`)
+      - Database: `helphub`
+      - Username: `postgres`
+      - Password: `root`
 
 > [!NOTE]
 > The external port for the Docker database is set to **5433** to avoid conflicts with your local PostgreSQL (running on 5432).

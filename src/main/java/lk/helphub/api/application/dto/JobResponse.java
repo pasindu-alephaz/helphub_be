@@ -41,8 +41,23 @@ public class JobResponse {
     @Schema(description = "Scheduled date and time", example = "2024-12-01T14:30:00")
     private LocalDateTime scheduledAt;
 
+    @Schema(description = "Type of job: FIXED or BIDDING")
+    private String jobType;
+
+    @Schema(description = "Preferred price for the job")
+    private BigDecimal preferredPrice;
+
     @Schema(description = "Urgency flag", example = "Urgent")
     private String urgencyFlag;
+
+    @Schema(description = "Job availability duration", example = "2 hours")
+    private String jobAvailabilityDuration;
+
+    @Schema(description = "Job plan details", example = "Standard Plan")
+    private String jobPlan;
+
+    @Schema(description = "Preferred language for communication", example = "English")
+    private String preferredLanguage;
 
     @Schema(description = "Current status of the job", example = "OPEN")
     private String status;
@@ -55,6 +70,9 @@ public class JobResponse {
 
     @Schema(description = "List of image URLs attached to the job")
     private List<String> imageUrls;
+
+    @Schema(description = "List of image details (ID and URL) attached to the job")
+    private List<ImageResponse> images;
 
     @Schema(description = "Creation timestamp")
     private LocalDateTime createdAt;

@@ -34,12 +34,23 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/helphub
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=root
-      - SPRING_JPA_IBERNATE_DDL_AUTO=validate
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_LIQUIBASE_ENABLED=true
       - SPRING_MAIL_HOST=smtp.ethereal.email
       - SPRING_MAIL_PORT=587
       - SPRING_MAIL_USERNAME=adriana.kuhic@ethereal.email
       - SPRING_MAIL_PASSWORD=PsTR3HyQqUztBZXSzA
+    volumes:
+      - ./uploads:/app/uploads
+
+  adminer:
+    image: adminer
+    container_name: helphub-adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:

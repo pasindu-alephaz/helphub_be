@@ -37,7 +37,7 @@ public ResponseEntity<ApiResponse<Page<JobResponse>>> getJobs(
     @RequestParam(required = false) String locationCity,      // Filter by city
     @RequestParam(required = false) String jobType            // FIXED, BIDDING
 ) {
-    // Returns paginated list of jobs matching filters
+    // Returns paginated list of jobs matching filters, including image URLs and basic info
 }
 ```
 
@@ -52,7 +52,7 @@ public ResponseEntity<ApiResponse<Page<JobResponse>>> getJobs(
 ```java
 @GetMapping("/{id}")
 public ResponseEntity<ApiResponse<JobResponse>> getJobById(@PathVariable UUID id) {
-    // Returns full job details including images, poster info, etc.
+    // Returns full job details including image objects (ID, URL), poster info, etc.
 }
 ```
 

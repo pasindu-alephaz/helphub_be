@@ -4,6 +4,14 @@ import lk.helphub.api.application.dto.JobCreateRequest;
 import lk.helphub.api.application.dto.JobResponse;
 import lk.helphub.api.application.dto.JobTemplateCreateRequest;
 import lk.helphub.api.application.dto.JobTemplateResponse;
+import lk.helphub.api.application.dto.JobUpdateRequest;
+import lk.helphub.api.application.dto.JobTemplateUpdateRequest;
+import lk.helphub.api.application.dto.JobFromTemplateRequest;
+import lk.helphub.api.application.dto.ProviderCompleteRequest;
+import lk.helphub.api.application.dto.DisputeJobRequest;
+import lk.helphub.api.application.dto.CancelJobRequest;
+import lk.helphub.api.application.dto.RejectJobRequest;
+import lk.helphub.api.application.dto.ImageResponse;
 import lk.helphub.api.application.services.JobService;
 import lk.helphub.api.domain.entity.Image;
 import lk.helphub.api.domain.entity.Job;
@@ -19,8 +27,11 @@ import lk.helphub.api.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -76,6 +88,11 @@ public class JobServiceImpl implements JobService {
                 .price(request.getPrice())
                 .scheduledAt(request.getScheduledAt())
                 .urgencyFlag(request.getUrgencyFlag())
+                .jobType(request.getJobType())
+                .preferredPrice(request.getPreferredPrice())
+                .jobAvailabilityDuration(request.getJobAvailabilityDuration())
+                .jobPlan(request.getJobPlan())
+                .preferredLanguage(request.getPreferredLanguage())
                 .postedBy(user)
                 .status("OPEN")
                 .build();
@@ -147,6 +164,51 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ImageResponse> getJobImages(UUID jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("Job not found with id: " + jobId);
+        }
+
+        return job.getImages().stream()
+                .filter(image -> image.getDeletedAt() == null)
+                .map(image -> ImageResponse.builder()
+                        .id(image.getId())
+                        .url(image.getUrl())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteJobImage(UUID jobId, UUID imageId, String userEmail) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("Job not found with id: " + jobId);
+        }
+
+        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to delete images for this job");
+        }
+
+        Image imageToDelete = job.getImages().stream()
+                .filter(img -> img.getId().equals(imageId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Image not found with id: " + imageId + " for this job"));
+
+        imageToDelete.setDeletedAt(LocalDateTime.now());
+        imageRepository.save(imageToDelete);
+
+        // Remove from the set as well
+        job.getImages().remove(imageToDelete);
+        jobRepository.save(job);
+    }
+
+    @Override
     public JobTemplateResponse createJobTemplate(String userEmail, JobTemplateCreateRequest request) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
@@ -166,11 +228,117 @@ public class JobServiceImpl implements JobService {
                 .locationCoordinates(parseLocation(request.getLocationCoordinates()))
                 .price(request.getPrice())
                 .urgencyFlag(request.getUrgencyFlag())
+                .jobType(request.getJobType())
+                .preferredPrice(request.getPreferredPrice())
+                .jobAvailabilityDuration(request.getJobAvailabilityDuration())
+                .jobPlan(request.getJobPlan())
+                .preferredLanguage(request.getPreferredLanguage())
                 .user(user)
                 .build();
 
         JobTemplate savedTemplate = jobTemplateRepository.save(template);
         return mapToJobTemplateResponse(savedTemplate);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<JobTemplateResponse> getMyTemplates(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+        return jobTemplateRepository.findAllByUser(user).stream()
+                .map(this::mapToJobTemplateResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JobTemplateResponse getTemplateById(UUID templateId, String userEmail) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+        
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to access this template");
+        }
+        
+        return mapToJobTemplateResponse(template);
+    }
+
+    @Override
+    public JobTemplateResponse updateTemplate(UUID templateId, String userEmail, JobTemplateUpdateRequest request) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to update this template");
+        }
+
+        if (request.getTemplateName() != null) template.setTemplateName(request.getTemplateName());
+        if (request.getTitle() != null) template.setTitle(request.getTitle());
+        if (request.getDescription() != null) template.setDescription(request.getDescription());
+        if (request.getLocationAddress() != null) template.setLocationAddress(request.getLocationAddress());
+        if (request.getLocationCoordinates() != null) template.setLocationCoordinates(parseLocation(request.getLocationCoordinates()));
+        if (request.getPrice() != null) template.setPrice(request.getPrice());
+        if (request.getUrgencyFlag() != null) template.setUrgencyFlag(request.getUrgencyFlag());
+        if (request.getJobType() != null) template.setJobType(request.getJobType());
+        if (request.getPreferredPrice() != null) template.setPreferredPrice(request.getPreferredPrice());
+        if (request.getJobAvailabilityDuration() != null) template.setJobAvailabilityDuration(request.getJobAvailabilityDuration());
+        if (request.getJobPlan() != null) template.setJobPlan(request.getJobPlan());
+        if (request.getPreferredLanguage() != null) template.setPreferredLanguage(request.getPreferredLanguage());
+
+        if (request.getSubcategoryId() != null) {
+            ServiceCategory subcategory = serviceCategoryRepository.findById(request.getSubcategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found with id: " + request.getSubcategoryId()));
+            template.setSubcategory(subcategory);
+        }
+
+        JobTemplate savedTemplate = jobTemplateRepository.save(template);
+        return mapToJobTemplateResponse(savedTemplate);
+    }
+
+    @Override
+    public void deleteTemplate(UUID templateId, String userEmail) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to delete this template");
+        }
+
+        jobTemplateRepository.delete(template);
+    }
+
+    @Override
+    public JobResponse createJobFromTemplate(UUID templateId, String userEmail, JobFromTemplateRequest request) {
+        JobTemplate template = jobTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
+
+        if (!template.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to use this template");
+        }
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+
+        Job job = Job.builder()
+                .title(request.getTitle() != null ? request.getTitle() : template.getTitle())
+                .description(request.getDescription() != null ? request.getDescription() : template.getDescription())
+                .subcategory(template.getSubcategory())
+                .locationAddress(template.getLocationAddress())
+                .locationCoordinates(template.getLocationCoordinates())
+                .price(request.getPrice() != null ? request.getPrice() : template.getPrice())
+                .scheduledAt(request.getScheduledAt())
+                .jobType(template.getJobType())
+                .preferredPrice(template.getPreferredPrice())
+                .jobAvailabilityDuration(template.getJobAvailabilityDuration())
+                .jobPlan(template.getJobPlan())
+                .preferredLanguage(template.getPreferredLanguage())
+                .urgencyFlag(template.getUrgencyFlag())
+                .postedBy(user)
+                .status("OPEN")
+                .build();
+
+        Job savedJob = jobRepository.save(job);
+        return mapToJobResponse(savedJob);
     }
 
     @Override
@@ -198,15 +366,13 @@ public class JobServiceImpl implements JobService {
             if (locationCity != null && !locationCity.trim().isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("locationAddress")), "%" + locationCity.toLowerCase() + "%"));
             }
-            // If there's a jobType field, uncomment below when entity supports it (currently not in Job entity)
-            // if (jobType != null && !jobType.trim().isEmpty()) {
-            //     predicates.add(cb.equal(root.get("jobType"), jobType));
-            // }
-
+            if (jobType != null && !jobType.trim().isEmpty()) {
+                predicates.add(cb.equal(root.get("jobType"), jobType));
+            }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-
-        return jobRepository.findAll(spec, pageable).map(this::mapToJobResponse);
+        Pageable sanitizedPageable = sanitizePageable(pageable);
+        return jobRepository.findAll(spec, sanitizedPageable).map(this::mapToJobResponse);
     }
 
     @Override
@@ -232,10 +398,248 @@ public class JobServiceImpl implements JobService {
         return nearbyJobs.stream().map(this::mapToJobResponse).collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<JobResponse> getMyPostedJobs(String userEmail, Pageable pageable, String status) {
+        Pageable sanitizedPageable = sanitizePageable(pageable);
+        Page<Job> jobs;
+        if (status != null && !status.trim().isEmpty()) {
+            jobs = jobRepository.findByPostedByEmailAndStatusAndDeletedAtIsNull(userEmail, status, sanitizedPageable);
+        } else {
+            jobs = jobRepository.findByPostedByEmailAndDeletedAtIsNull(userEmail, sanitizedPageable);
+        }
+        return jobs.map(this::mapToJobResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<JobResponse> getAcceptedJobs(String userEmail, Pageable pageable, String status) {
+        Pageable sanitizedPageable = sanitizePageable(pageable);
+        Page<Job> jobs;
+        if (status != null && !status.trim().isEmpty()) {
+            jobs = jobRepository.findByAcceptedByEmailAndStatusAndDeletedAtIsNull(userEmail, status, sanitizedPageable);
+        } else {
+            jobs = jobRepository.findByAcceptedByEmailAndDeletedAtIsNull(userEmail, sanitizedPageable);
+        }
+        return jobs.map(this::mapToJobResponse);
+    }
+
+    @Override
+    public JobResponse updateJob(UUID jobId, String userEmail, JobUpdateRequest request) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("Job not found with id: " + jobId);
+        }
+
+        // Verify the user is the job poster
+        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to update this job");
+        }
+
+        // Only allow updates when job is still OPEN
+        if (!"OPEN".equals(job.getStatus())) {
+            throw new RuntimeException("Cannot update job that is not in OPEN status");
+        }
+
+        // Update fields if provided
+        if (request.getJobType() != null) {
+            job.setJobType(request.getJobType());
+        }
+        if (request.getPreferredPrice() != null) {
+            job.setPreferredPrice(request.getPreferredPrice());
+        }
+        if (request.getJobAvailabilityDuration() != null) {
+            job.setJobAvailabilityDuration(request.getJobAvailabilityDuration());
+        }
+        if (request.getJobPlan() != null) {
+            job.setJobPlan(request.getJobPlan());
+        }
+        if (request.getPreferredLanguage() != null) {
+            job.setPreferredLanguage(request.getPreferredLanguage());
+        }
+        if (request.getJobDate() != null || request.getJobTime() != null) {
+            LocalDateTime scheduledAt = job.getScheduledAt();
+            if (scheduledAt == null) {
+                scheduledAt = LocalDateTime.now();
+            }
+            if (request.getJobDate() != null) {
+                scheduledAt = scheduledAt.with(request.getJobDate());
+            }
+            if (request.getJobTime() != null) {
+                scheduledAt = scheduledAt.with(request.getJobTime());
+            }
+            job.setScheduledAt(scheduledAt);
+        }
+
+        Job savedJob = jobRepository.save(job);
+        return mapToJobResponse(savedJob);
+    }
+
+    @Override
+    public void deleteJob(UUID jobId, String userEmail) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getDeletedAt() != null) {
+            throw new RuntimeException("Job is already deleted");
+        }
+
+        // Verify the user is the job poster
+        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("User is not authorized to delete this job");
+        }
+
+        // Soft delete - set deletedAt timestamp
+        job.setDeletedAt(LocalDateTime.now());
+        jobRepository.save(job);
+    }
+
+    @Override
+    public JobResponse acceptJob(UUID jobId, String userEmail) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+
+        if (!"OPEN".equals(job.getStatus())) {
+            throw new RuntimeException("Job is not open for acceptance");
+        }
+
+        if (job.getPostedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("Poster cannot accept their own job");
+        }
+
+        job.setAcceptedBy(user);
+        job.setStatus("IN_PROGRESS");
+        Job savedJob = jobRepository.save(job);
+        return mapToJobResponse(savedJob);
+    }
+
+    @Override
+    public JobResponse providerCompleteJob(UUID jobId, String userEmail, ProviderCompleteRequest request) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getAcceptedBy() == null || !job.getAcceptedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("Only the accepted provider can mark the job as complete");
+        }
+
+        if (!"IN_PROGRESS".equals(job.getStatus())) {
+            throw new RuntimeException("Job must be in progress to be marked as complete by provider");
+        }
+
+        job.setStatus("PENDING_CONFIRMATION");
+        // remarks/images logic can be added here if persistence is required for them
+        Job savedJob = jobRepository.save(job);
+        return mapToJobResponse(savedJob);
+    }
+
+    @Override
+    public JobResponse completeJob(UUID jobId, String userEmail) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("Only the job poster can confirm job completion");
+        }
+
+        if (!"PENDING_CONFIRMATION".equals(job.getStatus()) && !"IN_PROGRESS".equals(job.getStatus())) {
+            throw new RuntimeException("Job is not in a completed/confirmable state");
+        }
+
+        job.setStatus("COMPLETED");
+        Job savedJob = jobRepository.save(job);
+        return mapToJobResponse(savedJob);
+    }
+
+    @Override
+    public JobResponse disputeJob(UUID jobId, String userEmail, DisputeJobRequest request) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        boolean isPoster = job.getPostedBy().getEmail().equals(userEmail);
+        boolean isProvider = job.getAcceptedBy() != null && job.getAcceptedBy().getEmail().equals(userEmail);
+
+        if (!isPoster && !isProvider) {
+            throw new RuntimeException("Only the poster or accepted provider can initiate a dispute");
+        }
+
+        job.setStatus("DISPUTED");
+        // persistence for reason/evidence can be added here
+        Job savedJob = jobRepository.save(job);
+        return mapToJobResponse(savedJob);
+    }
+
+    @Override
+    public JobResponse cancelJob(UUID jobId, String userEmail, CancelJobRequest request) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+            // If the provider wants to cancel, it should likely be 'rejectJob'.
+            throw new RuntimeException("Only the job poster can cancel the job posting");
+        }
+
+        if ("COMPLETED".equals(job.getStatus()) || "CANCELLED".equals(job.getStatus())) {
+            throw new RuntimeException("Cannot cancel a completed or already cancelled job");
+        }
+
+        job.setStatus("CANCELLED");
+        Job savedJob = jobRepository.save(job);
+        return mapToJobResponse(savedJob);
+    }
+
+    @Override
+    public JobResponse startJob(UUID jobId, String userEmail) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getAcceptedBy() == null || !job.getAcceptedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("Only the accepted provider can start the job");
+        }
+
+        if (!"IN_PROGRESS".equals(job.getStatus())) {
+             throw new RuntimeException("Job must be in progress/accepted to be started");
+        }
+
+        // status remains IN_PROGRESS as per spec, but we confirm action
+        return mapToJobResponse(job);
+    }
+
+    @Override
+    public JobResponse rejectJob(UUID jobId, String userEmail, RejectJobRequest request) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        if (job.getAcceptedBy() == null || !job.getAcceptedBy().getEmail().equals(userEmail)) {
+            throw new RuntimeException("Only the accepted provider can reject/abandon the job");
+        }
+
+        if (!"IN_PROGRESS".equals(job.getStatus())) {
+            throw new RuntimeException("Cannot reject a job that is not in progress");
+        }
+
+        job.setAcceptedBy(null);
+        job.setStatus("OPEN");
+        Job savedJob = jobRepository.save(job);
+        return mapToJobResponse(savedJob);
+    }
+
     private JobResponse mapToJobResponse(Job job) {
         List<String> imageUrls = new ArrayList<>();
+        List<ImageResponse> images = new ArrayList<>();
         if (job.getImages() != null) {
-            imageUrls = job.getImages().stream().map(Image::getUrl).collect(Collectors.toList());
+            images = job.getImages().stream()
+                    .filter(image -> image.getDeletedAt() == null)
+                    .map(image -> ImageResponse.builder()
+                            .id(image.getId())
+                            .url(image.getUrl())
+                            .build())
+                    .collect(Collectors.toList());
+            imageUrls = images.stream().map(ImageResponse::getUrl).collect(Collectors.toList());
         }
 
         return JobResponse.builder()
@@ -247,11 +651,17 @@ public class JobServiceImpl implements JobService {
                 .locationCoordinates(job.getLocationCoordinates() != null ? job.getLocationCoordinates().toText() : null)
                 .price(job.getPrice())
                 .scheduledAt(job.getScheduledAt())
+                .jobType(job.getJobType())
+                .preferredPrice(job.getPreferredPrice())
+                .jobAvailabilityDuration(job.getJobAvailabilityDuration())
+                .jobPlan(job.getJobPlan())
+                .preferredLanguage(job.getPreferredLanguage())
                 .urgencyFlag(job.getUrgencyFlag())
                 .status(job.getStatus())
                 .postedBy(job.getPostedBy() != null ? job.getPostedBy().getId() : null)
                 .acceptedBy(job.getAcceptedBy() != null ? job.getAcceptedBy().getId() : null)
                 .imageUrls(imageUrls)
+                .images(images)
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
                 .build();
@@ -268,6 +678,11 @@ public class JobServiceImpl implements JobService {
                 .locationCoordinates(template.getLocationCoordinates() != null ? template.getLocationCoordinates().toText() : null)
                 .price(template.getPrice())
                 .urgencyFlag(template.getUrgencyFlag())
+                .jobType(template.getJobType())
+                .preferredPrice(template.getPreferredPrice())
+                .jobAvailabilityDuration(template.getJobAvailabilityDuration())
+                .jobPlan(template.getJobPlan())
+                .preferredLanguage(template.getPreferredLanguage())
                 .userId(template.getUser() != null ? template.getUser().getId() : null)
                 .createdAt(template.getCreatedAt())
                 .updatedAt(template.getUpdatedAt())
@@ -283,5 +698,22 @@ public class JobServiceImpl implements JobService {
         } catch (ParseException e) {
             throw new IllegalArgumentException("Invalid coordinates format. Expected WKT format like POINT(lon lat)", e);
         }
+    }
+
+    private Pageable sanitizePageable(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            return pageable;
+        }
+
+        boolean hasInvalidSort = pageable.getSort().stream()
+                .anyMatch(order -> order.getProperty().contains("[") || order.getProperty().equals("string"));
+
+        if (hasInvalidSort) {
+            log.warn("Invalid sort property detected: {}. Falling back to default sort (createdAt DESC).", pageable.getSort());
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                    Sort.by(Sort.Direction.DESC, "createdAt"));
+        }
+
+        return pageable;
     }
 }

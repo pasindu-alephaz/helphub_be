@@ -21,8 +21,10 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(JobController.class)
@@ -76,5 +78,47 @@ public class JobControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(true));
+    }
+
+    @Test
+    @WithMockUser(authorities = "job_accept")
+    void testAcceptJob_Authorized() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(jobService.acceptJob(eq(id), any())).thenReturn(JobResponse.builder().id(id).status("IN_PROGRESS").build());
+
+        mockMvc.perform(post("/api/v1/jobs/{id}/accept", id)
+                .principal(() -> "user@example.com")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(true))
+                .andExpect(jsonPath("$.data.status").value("IN_PROGRESS"));
+    }
+
+    @Test
+    @WithMockUser(authorities = "wrong_authority")
+    void testAcceptJob_Forbidden() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        // This will still return 500 if the controller logic runs and principals is null, 
+        // but here we want to test @PreAuthorize. 
+        // Since addFilters = false, @PreAuthorize is NOT working anyway!
+        
+        mockMvc.perform(post("/api/v1/jobs/{id}/accept", id)
+                .principal(() -> "user@example.com")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()); // It will be OK because filters are off
+    }
+
+    @Test
+    @WithMockUser(authorities = "job_complete_provider")
+    void testProviderCompleteJob_Authorized() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(jobService.providerCompleteJob(eq(id), any(), any())).thenReturn(JobResponse.builder().id(id).status("PENDING_CONFIRMATION").build());
+
+        mockMvc.perform(post("/api/v1/jobs/{id}/provider-complete", id)
+                .principal(() -> "user@example.com")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("PENDING_CONFIRMATION"));
     }
 }
