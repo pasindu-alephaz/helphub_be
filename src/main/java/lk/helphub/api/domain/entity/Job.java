@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import org.locationtech.jts.geom.Point;
 
 @Entity
 @Table(name = "jobs")
@@ -38,8 +37,11 @@ public class Job {
     @Column(name = "location_address", nullable = false, columnDefinition = "TEXT")
     private String locationAddress;
 
-    @Column(name = "location_coordinates", columnDefinition = "geometry(Point,4326)")
-    private Point locationCoordinates;
+    @Column(precision = 10, scale = 8)
+    private BigDecimal latitude;
+
+    @Column(precision = 11, scale = 8)
+    private BigDecimal longitude;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
