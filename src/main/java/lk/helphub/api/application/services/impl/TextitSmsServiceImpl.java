@@ -26,7 +26,7 @@ import java.net.URI;
 @Slf4j
 public class TextitSmsServiceImpl implements SmsService {
 
-    private static final String TEXTIT_API_BASE_URL = "https://textit.biz/sendmsg";
+    private static final String TEXTIT_API_BASE_URL = "https://www.textit.biz/sendmsg/";
 
     @Value("${textit.username}")
     private String username;
