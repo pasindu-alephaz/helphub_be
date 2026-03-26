@@ -30,6 +30,8 @@ Base path: `/api/v1/auth`
 | `POST` | `/apple` | Public | Login with Apple |
 | `POST` | `/refresh` | Public | Refresh expired access token |
 | `POST` | `/logout` | 🔒 | Logout by revoking refresh token |
+| `POST` | `/forgot-password` | Public | Initiate password reset via email |
+| `POST` | `/reset-password` | Public | Complete password reset with OTP |
 
 ---
 
@@ -215,6 +217,11 @@ Base path: `/api/v1/profile`
 |--------|----------|------|---------------------|
 | `GET` | `/` | 🔒 JWT | `profile_read` |
 | `PUT` | `/` | 🔒 JWT | `profile_update` |
+| `GET` | `/addresses` | 🔒 JWT | List user addresses |
+| `POST` | `/addresses` | 🔒 JWT | Add a new address |
+| `PUT` | `/addresses/{id}` | 🔒 JWT | Update an address |
+| `DELETE` | `/addresses/{id}` | 🔒 JWT | Delete an address |
+| `PUT` | `/addresses/{id}/default` | 🔒 JWT | Set as default address |
 
 ---
 
@@ -257,17 +264,31 @@ Updates the profile of the currently authenticated user.
 
 ## 4. Service Categories
 
+### 4.1 User Facing APIs
 | Method | Endpoint | Auth | Summary |
 |--------|----------|------|---------|
 | `GET` | `/api/v1/categories` | Public | List all categories (flat or hierarchical) |
-| `POST` | `/api/v1/categories` | 🔒 JWT | Create a top-level category |
 | `GET` | `/api/v1/categories/{id}` | Public | Get a category by ID |
-| `PUT` | `/api/v1/categories/{id}` | 🔒 JWT | Update a category |
-| `DELETE` | `/api/v1/categories/{id}` | 🔒 JWT | Soft-delete a category |
-| `POST` | `/api/v1/subcategories` | 🔒 JWT | Create a subcategory |
-| `GET` | `/api/v1/subcategories/{id}` | Public | Get a subcategory by ID |
-| `PUT` | `/api/v1/subcategories/{id}` | 🔒 JWT | Update a subcategory |
-| `DELETE` | `/api/v1/subcategories/{id}` | 🔒 JWT | Soft-delete a subcategory |
+| `GET` | `/api/v1/categories/{categoryId}/subcategories/{subCategoryId}` | Public | Get a subcategory by ID |
+| `POST` | `/api/v1/categories/request` | 🔒 JWT | Request/suggest a new category |
+| `POST` | `/api/v1/categories/{categoryId}/subcategories/request` | 🔒 JWT | Request/suggest a new subcategory |
+
+### 4.2 Admin Management APIs 🔑
+| Method | Endpoint | Summary |
+|--------|----------|---------|
+| `GET` | `/api/v1/admin/categories` | List all categories with full details |
+| `GET` | `/api/v1/admin/subcategories` | List all subcategories |
+| `POST` | `/api/v1/admin/categories` | Create a top-level category |
+| `GET` | `/api/v1/admin/categories/{id}` | Get a category by ID |
+| `PUT` | `/api/v1/admin/categories/{id}` | Update a category |
+| `DELETE` | `/api/v1/admin/categories/{id}` | Soft-delete a category |
+| `POST` | `/api/v1/admin/categories/{categoryId}/subcategories` | Create a subcategory |
+| `GET` | `/api/v1/admin/categories/{categoryId}/subcategories/{subCategoryId}` | Get a subcategory by ID |
+| `PUT` | `/api/v1/admin/categories/{categoryId}/subcategories/{subCategoryId}` | Update a subcategory |
+| `DELETE` | `/api/v1/admin/categories/{categoryId}/subcategories/{subCategoryId}` | Soft-delete a subcategory |
+| `GET` | `/api/v1/admin/categories/requests` | List pending category requests |
+| `POST` | `/api/v1/admin/categories/requests/{id}/approve` | Approve a request |
+| `POST` | `/api/v1/admin/categories/requests/{id}/reject` | Reject a request |
 
 ---
 
@@ -285,17 +306,16 @@ Returns all categories. Use `?hierarchical=true` (default) for a nested tree str
 
 ---
 
-### POST `/api/v1/categories`
+### POST `/api/v1/admin/categories`
 
-Creates a new top-level category.
+Creates a new top-level category. Uses `multipart/form-data`.
 
-**Request Body**
-```json
-{
-  "name": "string",
-  "description": "string"
-}
-```
+**Request Parts**
+- `category`: JSON object containing:
+  - `name`: Map<String, String> (localized)
+  - `description`: Map<String, String> (localized, optional)
+  - `displayOrder`: Integer
+- `image`: File (optional, category icon)
 
 **Responses:** `200 OK` / `400 Bad Request`
 
@@ -335,20 +355,18 @@ Soft-deletes a top-level category.
 
 ---
 
-### POST `/api/v1/subcategories`
+### POST `/api/v1/admin/categories/{categoryId}/subcategories`
 
-Creates a new subcategory under a parent category.
+Creates a new subcategory. Uses `multipart/form-data`.
 
-**Request Body**
-```json
-{
-  "name": "string",
-  "description": "string",
-  "parentId": "UUID"
-}
-```
+**Request Parts**
+- `subcategory`: JSON object containing:
+  - `name`: Map<String, String>
+  - `description`: Map<String, String>
+  - `displayOrder`: Integer
+- `image`: File (optional, icon)
 
-**Responses:** `200 OK` / `400 Bad Request` (parent not found)
+**Responses:** `200 OK` / `400 Bad Request`
 
 ---
 
@@ -474,6 +492,111 @@ Base path: `/api/v1/permissions`
 |--------|----------|------|---------------------|
 | `GET` | `/` | 🔑 | `permission_read` |
 | `GET` | `/{id}` | 🔑 | `permission_read` |
+
+---
+
+## 7. Jobs 🔒
+
+| Method | Endpoint | Summary |
+|--------|----------|---------|
+| `POST` | `/api/v1/jobs` | Create a new job request |
+| `GET` | `/api/v1/jobs` | List and filter jobs (Public/Authenticated) |
+| `GET` | `/api/v1/jobs/{id}` | Get job details |
+| `PUT` | `/api/v1/jobs/{id}` | Update job details |
+| `DELETE` | `/api/v1/jobs/{id}` | Soft-delete/cancel a job |
+| `POST` | `/api/v1/jobs/{id}/images` | Upload job images (multipart) |
+| `GET` | `/api/v1/jobs/{id}/images` | List job images |
+| `POST` | `/api/v1/jobs/{id}/accept` | Accept a job (Provider) |
+| `POST` | `/api/v1/jobs/{id}/start` | Mark job as started |
+| `POST` | `/api/v1/jobs/{id}/complete` | Confirm completion (Poster) |
+| `GET` | `/api/v1/jobs/nearby` | Find jobs by coordinates |
+| `GET` | `/api/v1/jobs/my-jobs` | List user's posted jobs |
+| `GET` | `/api/v1/jobs/accepted` | List provider's accepted jobs |
+
+---
+
+## 8. Job Bidding (Bids) 🔒 
+
+Base path: `/api/v1/jobs/{id}/bids`
+
+| Method | Endpoint | Summary |
+|--------|----------|---------|
+| `POST` | `/` | Submit a bid (Provider) |
+| `GET` | `/` | View all bids for a job |
+| `PUT` | `/{bidId}` | Adjust a submitted bid |
+| `POST` | `/{bidId}/accept` | Accept a specific bid |
+
+---
+
+## 9. Job Negotiation (Messages) 🔒
+
+Base path: `/api/v1/jobs/{id}/messages`
+
+| Method | Endpoint | Summary |
+|--------|----------|---------|
+| `POST` | `/` | Send a negotiation message/chat |
+| `GET` | `/` | Get chat history for a job |
+| `POST` | `/{messageId}/accept` | Accept a price/schedule suggestion |
+
+---
+
+## 10. Provider Onboarding & Profiles 🔒
+
+Base path: `/api/v1/providers`
+
+| Method | Endpoint | Summary |
+|--------|----------|---------|
+| `POST` | `/onboarding/identity` | Step 1: Identity verification (multipart) |
+| `POST` | `/onboarding/certificates` | Step 2: Add professional certificates |
+| `POST` | `/onboarding/services` | Step 3: Select service categories |
+| `POST` | `/onboarding/availability` | Step 4: Set availability schedule |
+| `POST` | `/onboarding/portfolio` | Add portfolio items |
+| `GET` | `/onboarding/me` | Get current provider onboarding status |
+| `GET` | `/{id}/profile` | Retrieve public provider profile |
+
+---
+
+## 11. Notifications 🔒
+
+Base path: `/api/v1/notifications`
+
+| Method | Endpoint | Summary |
+|--------|----------|---------|
+| `GET` | `/` | List user notifications (Paginated) |
+| `PUT` | `/mark-as-read/{id}` | Mark a specific notification as read |
+| `PUT` | `/mark-as-read` | Mark all notifications as read |
+| `DELETE` | `/{id}` | Soft delete a notification |
+| `GET` | `/stream` | Subscribe to real-time updates (SSE) |
+
+---
+
+## 12. Admin - User Management 🔑
+
+Base path: `/api/v1/admin/users`
+
+| Method | Endpoint | Summary |
+|--------|----------|---------|
+| `GET` | `/` | List all users (Paginated & Filterable) |
+| `GET` | `/{id}` | Get user by ID |
+| `POST` | `/` | Create a new user account |
+| `PUT` | `/{id}` | Update user account |
+| `DELETE` | `/{id}` | Soft delete a user |
+| `GET` | `/statistics` | Get platform user statistics |
+
+---
+
+## 13. Admin - Provider Verification 🔑
+
+Base path: `/api/v1/admin`
+
+| Method | Endpoint | Summary |
+|--------|----------|---------|
+| `PATCH` | `/providers/{id}/verify` | Approve or reject a provider profile |
+| `PATCH` | `/certificates/{id}/verify` | Verify a provider certificate |
+
+---
+
+---
 
 > Permissions are **read-only** — they are seeded by the system and cannot be created or deleted via the API.
 
