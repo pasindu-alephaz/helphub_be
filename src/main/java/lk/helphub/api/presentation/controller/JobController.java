@@ -15,7 +15,6 @@ import lk.helphub.api.application.dto.JobTemplateUpdateRequest;
 import lk.helphub.api.application.dto.JobFromTemplateRequest;
 import lk.helphub.api.application.dto.JobTemplateResponse;
 import lk.helphub.api.application.dto.JobUpdateRequest;
-import lk.helphub.api.application.dto.ProviderCompleteRequest;
 import lk.helphub.api.application.dto.DisputeJobRequest;
 import lk.helphub.api.application.dto.CancelJobRequest;
 import lk.helphub.api.application.dto.RejectJobRequest;
@@ -423,27 +422,6 @@ public class JobController {
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
                 .message("Job accepted successfully")
-                .data(response)
-                .build());
-    }
-
-    @PostMapping("/{id}/provider-complete")
-    @Operation(summary = "Provider mark as complete", description = "Provider indicates they have finished the work")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Job marked as pending confirmation"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid state or unauthorized")
-    })
-    @PreAuthorize("hasAuthority('job_complete_provider')")
-    public ResponseEntity<ApiResponse<JobResponse>> providerCompleteJob(
-            Principal principal,
-            @PathVariable UUID id,
-            @RequestBody(required = false) ProviderCompleteRequest request
-    ) {
-        JobResponse response = jobService.providerCompleteJob(id, principal.getName(), request);
-        return ResponseEntity.ok(ApiResponse.<JobResponse>builder()
-                .status(true)
-                .statusCode(ResponseStatusCode.SUCCESS)
-                .message("Job marked as pending confirmation")
                 .data(response)
                 .build());
     }

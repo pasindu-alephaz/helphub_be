@@ -74,6 +74,7 @@ public class MessageServiceTest {
 
         when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
         when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
+        when(jobRepository.save(any(Job.class))).thenAnswer(i -> i.getArgument(0));
 
         JobResponse result = messageService.acceptSuggestion(jobId, messageId, posterEmail);
 

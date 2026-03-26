@@ -7,7 +7,6 @@ import lk.helphub.api.application.dto.JobTemplateResponse;
 import lk.helphub.api.application.dto.JobUpdateRequest;
 import lk.helphub.api.application.dto.JobTemplateUpdateRequest;
 import lk.helphub.api.application.dto.JobFromTemplateRequest;
-import lk.helphub.api.application.dto.ProviderCompleteRequest;
 import lk.helphub.api.application.dto.DisputeJobRequest;
 import lk.helphub.api.application.dto.CancelJobRequest;
 import lk.helphub.api.application.dto.RejectJobRequest;
@@ -31,7 +30,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,10 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.ParseException;
 
@@ -436,25 +431,6 @@ public class JobServiceImpl implements JobService {
 
         job.setAcceptedBy(user);
         job.setStatus("IN_PROGRESS");
-        Job savedJob = jobRepository.save(job);
-        return mapToJobResponse(savedJob);
-    }
-
-    @Override
-    public JobResponse providerCompleteJob(UUID jobId, String userEmail, ProviderCompleteRequest request) {
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
-
-        if (job.getAcceptedBy() == null || !job.getAcceptedBy().getEmail().equals(userEmail)) {
-            throw new RuntimeException("Only the accepted provider can mark the job as complete");
-        }
-
-        if (!"IN_PROGRESS".equals(job.getStatus())) {
-            throw new RuntimeException("Job must be in progress to be marked as complete by provider");
-        }
-
-        job.setStatus("PENDING_CONFIRMATION");
-        // remarks/images logic can be added here if persistence is required for them
         Job savedJob = jobRepository.save(job);
         return mapToJobResponse(savedJob);
     }

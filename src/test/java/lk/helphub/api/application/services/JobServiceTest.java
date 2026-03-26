@@ -26,7 +26,6 @@ import org.locationtech.jts.io.WKTReader;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -166,26 +165,6 @@ public class JobServiceTest {
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(new User()));
 
         assertThrows(RuntimeException.class, () -> jobService.acceptJob(jobId, userEmail));
-    }
-
-    @Test
-    void testProviderCompleteJob_Success() {
-        UUID jobId = UUID.randomUUID();
-        String userEmail = "provider@example.com";
-        User provider = new User();
-        provider.setEmail(userEmail);
-
-        Job job = new Job();
-        job.setId(jobId);
-        job.setStatus("IN_PROGRESS");
-        job.setAcceptedBy(provider);
-
-        when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
-        when(jobRepository.save(any(Job.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        JobResponse result = jobService.providerCompleteJob(jobId, userEmail, null);
-
-        assertEquals("PENDING_CONFIRMATION", result.getStatus());
     }
 
     @Test

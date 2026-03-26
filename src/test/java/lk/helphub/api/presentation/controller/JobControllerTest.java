@@ -109,16 +109,4 @@ public class JobControllerTest {
                 .andExpect(status().isOk()); // It will be OK because filters are off
     }
 
-    @Test
-    @WithMockUser(authorities = "job_complete_provider")
-    void testProviderCompleteJob_Authorized() throws Exception {
-        UUID id = UUID.randomUUID();
-        when(jobService.providerCompleteJob(eq(id), any(), any())).thenReturn(JobResponse.builder().id(id).status("PENDING_CONFIRMATION").build());
-
-        mockMvc.perform(post("/api/v1/jobs/{id}/provider-complete", id)
-                .principal(() -> "user@example.com")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.status").value("PENDING_CONFIRMATION"));
-    }
 }

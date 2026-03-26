@@ -8,7 +8,6 @@ import lk.helphub.api.application.dto.JobUpdateRequest;
 import lk.helphub.api.application.dto.JobTemplateUpdateRequest;
 import lk.helphub.api.application.dto.JobFromTemplateRequest;
 import lk.helphub.api.application.dto.ImageResponse;
-import lk.helphub.api.application.dto.ProviderCompleteRequest;
 import lk.helphub.api.application.dto.DisputeJobRequest;
 import lk.helphub.api.application.dto.CancelJobRequest;
 import lk.helphub.api.application.dto.RejectJobRequest;
@@ -60,8 +59,6 @@ public interface JobService {
 
     // Job Workflow Actions
     JobResponse acceptJob(UUID jobId, String userEmail);
-
-    JobResponse providerCompleteJob(UUID jobId, String userEmail, ProviderCompleteRequest request);
 
     JobResponse completeJob(UUID jobId, String userEmail);
 

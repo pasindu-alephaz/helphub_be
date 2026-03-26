@@ -5,30 +5,27 @@ import lk.helphub.api.application.dto.UpdateProfileRequest;
 import lk.helphub.api.application.services.ProfileService;
 import lk.helphub.api.infrastructure.security.JwtAuthenticationFilter;
 import lk.helphub.api.infrastructure.security.JwtUtil;
-import lk.helphub.api.infrastructure.security.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDate;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ProfileController.class)
-@Import(SecurityConfig.class)
-@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
+@org.springframework.boot.test.context.SpringBootTest
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 public class ProfilePermissionsIntegrationTest {
 
     @Autowired
@@ -42,9 +39,6 @@ public class ProfilePermissionsIntegrationTest {
 
     @MockBean
     private UserDetailsService userDetailsService;
-
-    @MockBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Test
     @WithMockUser(authorities = "profile_update")
@@ -74,6 +68,15 @@ public class ProfilePermissionsIntegrationTest {
     }
 
     @Test
+    @WithMockUser(authorities = "ROLE_USER") // Lacks 'profile_read'
+    void testGetProfileWithoutReadAuthorityShouldFail() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/profile")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithMockUser(authorities = "ROLE_USER") // This user LACKS 'profile_update' authority
     void testUpdateProfileWithoutProfileUpdateAuthorityShouldFail() throws Exception {
         MockMultipartFile requestJson = new MockMultipartFile(
@@ -89,6 +92,7 @@ public class ProfilePermissionsIntegrationTest {
                     return request;
                 })
                 .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
                 .andExpect(status().isForbidden());
     }
 }
