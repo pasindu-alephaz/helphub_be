@@ -9,8 +9,10 @@ import lk.helphub.api.application.services.CategoryService;
 import lk.helphub.api.domain.enums.ResponseStatusCode;
 import lk.helphub.api.presentation.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -74,14 +76,17 @@ public class CategoryController {
                 .build());
     }
 
-    @PostMapping("/categories/request")
-    @Operation(summary = "Request new category", description = "Allows users to suggest a new top-level service category")
+    @PostMapping(value = "/categories/request", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Request new category", description = "Allows users to suggest a new top-level service category with an optional icon")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Request submitted successfully"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    public ResponseEntity<ApiResponse<CategoryResponse>> requestCategory(@Valid @RequestBody CategoryCreateRequest request) {
-        CategoryResponse response = categoryService.requestCategory(request);
+    public ResponseEntity<ApiResponse<CategoryResponse>> requestCategory(
+            @Valid @RequestPart("category") CategoryCreateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        CategoryResponse response = categoryService.requestCategory(request, image);
         return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
@@ -90,18 +95,19 @@ public class CategoryController {
                 .build());
     }
 
-    @PostMapping("/categories/{categoryId}/subcategories/request")
-    @Operation(summary = "Request new subcategory", description = "Allows users to suggest a new subcategory for an existing category")
+    @PostMapping(value = "/categories/{categoryId}/subcategories/request", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Request new subcategory", description = "Allows users to suggest a new subcategory for an existing category with an optional icon")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Request submitted successfully"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
     })
     public ResponseEntity<ApiResponse<CategoryResponse>> requestSubcategory(
             @PathVariable UUID categoryId,
-            @Valid @RequestBody SubcategoryCreateRequest request
+            @Valid @RequestPart("subcategory") SubcategoryCreateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
     ) {
         request.setParentId(categoryId);
-        CategoryResponse response = categoryService.requestSubcategory(request);
+        CategoryResponse response = categoryService.requestSubcategory(request, image);
         return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
