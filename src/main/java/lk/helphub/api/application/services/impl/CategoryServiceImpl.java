@@ -2,6 +2,7 @@ package lk.helphub.api.application.services.impl;
 
 import lk.helphub.api.application.dto.*;
 import lk.helphub.api.application.services.CategoryService;
+import lk.helphub.api.application.services.ImageUploadService;
 import lk.helphub.api.domain.entity.ServiceCategory;
 import lk.helphub.api.domain.repository.ServiceCategoryRepository;
 import lk.helphub.api.domain.repository.ImageRepository;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lk.helphub.api.domain.exception.ResourceNotFoundException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,10 +23,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final ServiceCategoryRepository categoryRepository;
     private final ImageRepository imageRepository;
+    private final ImageUploadService imageUploadService;
 
     @Override
     @Transactional
-    public CategoryResponse createCategory(CategoryCreateRequest request) {
+    public CategoryResponse createCategory(CategoryCreateRequest request, MultipartFile image) {
         ServiceCategory category = ServiceCategory.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -32,17 +35,14 @@ public class CategoryServiceImpl implements CategoryService {
                 .displayOrder(request.getDisplayOrder())
                 .build();
 
-        if (request.getIconId() != null) {
-            imageRepository.findById(request.getIconId())
-                    .ifPresent(category::setIcon);
-        }
+        handleImageUpload(category, image, request.getIconId());
 
         return mapToResponse(categoryRepository.save(category));
     }
 
     @Override
     @Transactional
-    public CategoryResponse createSubcategory(SubcategoryCreateRequest request) {
+    public CategoryResponse createSubcategory(SubcategoryCreateRequest request, MultipartFile image) {
         if (request.getParentId() == null) {
             throw new IllegalArgumentException("Parent category ID is required for subcategory creation");
         }
@@ -59,10 +59,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .parent(parent)
                 .build();
 
-        if (request.getIconId() != null) {
-            imageRepository.findById(request.getIconId())
-                    .ifPresent(subcategory::setIcon);
-        }
+        handleImageUpload(subcategory, image, request.getIconId());
 
         return mapToResponse(categoryRepository.save(subcategory));
     }
@@ -75,6 +72,13 @@ public class CategoryServiceImpl implements CategoryService {
                     .collect(Collectors.toList());
         }
         return categoryRepository.findAllByDeletedAtIsNull().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CategoryResponse> getAllSubcategories() {
+        return categoryRepository.findAllByParentIsNotNullAndDeletedAtIsNull().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -102,19 +106,19 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryResponse updateCategory(UUID id, CategoryUpdateRequest request) {
+    public CategoryResponse updateCategory(UUID id, CategoryUpdateRequest request, MultipartFile image) {
         ServiceCategory category = categoryRepository.findById(id)
                 .filter(c -> c.getDeletedAt() == null && c.getParent() == null)
                 .orElseThrow(() -> new ResourceNotFoundException("Top-level category not found"));
 
-        updateBaseFields(category, request);
+        updateBaseFields(category, request, image);
 
         return mapToResponse(categoryRepository.save(category));
     }
 
     @Override
     @Transactional
-    public CategoryResponse updateSubcategory(UUID categoryId, UUID subCategoryId, SubcategoryUpdateRequest request) {
+    public CategoryResponse updateSubcategory(UUID categoryId, UUID subCategoryId, SubcategoryUpdateRequest request, MultipartFile image) {
         ServiceCategory subcategory = categoryRepository.findById(subCategoryId)
                 .filter(c -> c.getDeletedAt() == null && c.getParent() != null)
                 .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found"));
@@ -123,7 +127,7 @@ public class CategoryServiceImpl implements CategoryService {
             throw new IllegalArgumentException("Subcategory does not belong to the specified category");
         }
 
-        updateBaseFields(subcategory, request);
+        updateBaseFields(subcategory, request, image);
 
         if (request.getParentId() != null) {
             ServiceCategory parent = categoryRepository.findById(request.getParentId())
@@ -163,7 +167,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryResponse requestCategory(CategoryCreateRequest request) {
+    public CategoryResponse requestCategory(CategoryCreateRequest request, MultipartFile image) {
         ServiceCategory category = ServiceCategory.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -171,17 +175,14 @@ public class CategoryServiceImpl implements CategoryService {
                 .displayOrder(request.getDisplayOrder())
                 .build();
 
-        if (request.getIconId() != null) {
-            imageRepository.findById(request.getIconId())
-                    .ifPresent(category::setIcon);
-        }
+        handleImageUpload(category, image, request.getIconId());
 
         return mapToResponse(categoryRepository.save(category));
     }
 
     @Override
     @Transactional
-    public CategoryResponse requestSubcategory(SubcategoryCreateRequest request) {
+    public CategoryResponse requestSubcategory(SubcategoryCreateRequest request, MultipartFile image) {
         if (request.getParentId() == null) {
             throw new IllegalArgumentException("Parent category ID is required for subcategory requests");
         }
@@ -198,10 +199,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .parent(parent)
                 .build();
 
-        if (request.getIconId() != null) {
-            imageRepository.findById(request.getIconId())
-                    .ifPresent(subcategory::setIcon);
-        }
+        handleImageUpload(subcategory, image, request.getIconId());
 
         return mapToResponse(categoryRepository.save(subcategory));
     }
@@ -237,17 +235,30 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.save(category);
     }
 
-    private void updateBaseFields(ServiceCategory entity, BaseCategoryRequest request) {
+    private void updateBaseFields(ServiceCategory entity, BaseCategoryRequest request, MultipartFile image) {
         entity.setName(request.getName());
         entity.setDescription(request.getDescription());
         entity.setStatus(request.getStatus());
         entity.setDisplayOrder(request.getDisplayOrder());
 
-        if (request.getIconId() != null) {
-            imageRepository.findById(request.getIconId())
-                    .ifPresent(entity::setIcon);
-        } else {
-            entity.setIcon(null);
+        handleImageUpload(entity, image, request.getIconId());
+    }
+
+    private void handleImageUpload(ServiceCategory entity, MultipartFile image, UUID iconId) {
+        if (image != null && !image.isEmpty()) {
+            try {
+                String imageUrl = imageUploadService.uploadGenericImage(image, "category-icon", "category-icons");
+                imageRepository.findByUrl(imageUrl).ifPresent(entity::setIcon);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to upload category icon", e);
+            }
+        } else if (iconId != null) {
+            imageRepository.findById(iconId).ifPresent(entity::setIcon);
+        } else if (iconId == null && (image == null || image.isEmpty())) {
+            // Keep existing or clear if specifically requested. 
+            // For now, let's say if both are null/empty, we don't change it unless it's an update and we want to clear it.
+            // But base logic was setting to null if iconId was null.
+             entity.setIcon(null);
         }
     }
 
@@ -268,6 +279,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         if (entity.getIcon() != null) {
             response.setIconId(entity.getIcon().getId());
+            response.setIconUrl(entity.getIcon().getUrl());
         }
 
         if (entity.getSubcategories() != null && !entity.getSubcategories().isEmpty()) {
