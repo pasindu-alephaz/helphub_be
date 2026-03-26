@@ -1,7 +1,7 @@
-package lk.helphub.api.application.services.impl;
+package lk.helphub.api.admin.application.services.impl;
 
-import lk.helphub.api.application.dto.AdminVerificationRequest;
-import lk.helphub.api.application.services.AdminVerificationService;
+import lk.helphub.api.admin.application.dto.AdminVerificationRequest;
+import lk.helphub.api.admin.application.services.AdminVerificationService;
 import lk.helphub.api.domain.entity.ProviderCertificate;
 import lk.helphub.api.domain.entity.ProviderProfile;
 import lk.helphub.api.domain.enums.VerificationStatus;

@@ -1,6 +1,6 @@
-package lk.helphub.api.application.services;
+package lk.helphub.api.admin.application.services;
 
-import lk.helphub.api.application.dto.AdminVerificationRequest;
+import lk.helphub.api.admin.application.dto.AdminVerificationRequest;
 import java.util.UUID;
 
 public interface AdminVerificationService {

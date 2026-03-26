@@ -13,6 +13,8 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.data.mapping.PropertyReferenceException;
 
 @RestControllerAdvice
@@ -53,6 +55,23 @@ public class GlobalExceptionHandler {
                 .statusCode(ResponseStatusCode.BAD_REQUEST)
                 .message("Invalid property reference: " + ex.getPropertyName())
                 .data(ex.getMessage())
+                .build());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        Map<String, List<String>> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            String fieldName = error.getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.computeIfAbsent(fieldName, k -> new java.util.ArrayList<>()).add(errorMessage);
+        });
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.builder()
+                .status(false)
+                .statusCode(ResponseStatusCode.BAD_REQUEST)
+                .message("Validation failed")
+                .errors(errors)
                 .build());
     }
 

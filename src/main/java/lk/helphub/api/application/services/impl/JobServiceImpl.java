@@ -551,6 +551,16 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
+    public void reportJob(UUID jobId, String userEmail, String reason) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
+
+        job.setFlagged(true);
+        job.setFlagReason(reason);
+        jobRepository.save(job);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<JobTemplateResponse> getMyTemplates(String userEmail) {
         return jobTemplateRepository.findByUserEmail(userEmail).stream()
@@ -688,6 +698,9 @@ public class JobServiceImpl implements JobService {
                 .images(images)
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
+                .flagged(job.isFlagged())
+                .flagReason(job.getFlagReason())
+                .archivedAt(job.getArchivedAt())
                 .build();
     }
 

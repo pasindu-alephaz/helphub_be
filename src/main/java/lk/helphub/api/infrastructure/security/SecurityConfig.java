@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/admin/auth/login", "/api/v1/admin/auth/verify-2fa").permitAll()
+                        .requestMatchers("/api/v1/admin/auth/login", "/api/v1/admin/auth/verify-2fa", "/api/v1/admin/auth/refresh", "/api/v1/admin/auth/logout").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**", "/api/v1/subcategories/**").permitAll()

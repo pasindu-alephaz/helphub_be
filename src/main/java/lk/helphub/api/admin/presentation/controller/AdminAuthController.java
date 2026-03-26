@@ -2,6 +2,7 @@ package lk.helphub.api.admin.presentation.controller;
 
 import lk.helphub.api.application.dto.AuthResponse;
 import lk.helphub.api.application.dto.LoginRequest;
+import lk.helphub.api.application.dto.RefreshTokenRequest;
 import lk.helphub.api.application.dto.VerifyOtpRequest;
 import lk.helphub.api.admin.application.services.AdminAuthService;
 import lk.helphub.api.domain.enums.ResponseStatusCode;
@@ -79,6 +80,29 @@ public class AdminAuthController {
                 .statusCode(ResponseStatusCode.SUCCESS)
                 .message("Admin 2FA verified successfully")
                 .data(response)
+                .build());
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "Refresh admin access token", description = "Returns a new short-lived access token given a valid refresh token")
+    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        AuthResponse response = adminAuthService.refreshToken(request);
+        return ResponseEntity.ok(ApiResponse.<AuthResponse>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Token refreshed successfully")
+                .data(response)
+                .build());
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Admin logout", description = "Revokes the provided refresh token, logging the admin out from that session")
+    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        adminAuthService.logout(request);
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Logged out successfully")
                 .build());
     }
 }
