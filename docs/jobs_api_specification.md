@@ -724,7 +724,7 @@ public ResponseEntity<ApiResponse<JobResponse>> updateJobAdmin(
 
 ### DELETE /api/v1/admin/jobs/{id}
 
-**Purpose:** Permanently delete a job (admin hard delete).
+**Purpose:** Permanently delete a job (admin soft delete).
 
 ```java
 @DeleteMapping("/{id}")
@@ -732,7 +732,7 @@ public ResponseEntity<ApiResponse<JobResponse>> updateJobAdmin(
 public ResponseEntity<ApiResponse<Void>> deleteJobAdmin(
     @PathVariable UUID id
 ) {
-    // Hard delete - completely removes from database
+    // Soft delete - marks job as deleted but keeps records
 }
 ```
 

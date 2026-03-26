@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.LocalDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -43,4 +44,19 @@ public interface JobRepository extends JpaRepository<Job, UUID>, JpaSpecificatio
 
     @EntityGraph(attributePaths = { "images" })
     Optional<Job> findByIdAndPostedByEmail(UUID id, String email);
+
+    // Analytics queries
+    long countByStatusAndDeletedAtIsNullAndCreatedAtBetween(String status, LocalDateTime from, LocalDateTime to);
+
+    long countByUrgencyFlagAndDeletedAtIsNullAndCreatedAtBetween(String urgencyFlag, LocalDateTime from, LocalDateTime to);
+
+    long countByDeletedAtIsNullAndCreatedAtBetween(LocalDateTime from, LocalDateTime to);
+
+    @Query("SELECT AVG(j.price) FROM Job j WHERE j.deletedAt IS NULL AND j.createdAt BETWEEN :from AND :to")
+    BigDecimal findAveragePriceBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("SELECT j.subcategory.id, COUNT(j) FROM Job j " +
+            "WHERE j.deletedAt IS NULL AND j.subcategory IS NOT NULL " +
+            "GROUP BY j.subcategory.id ORDER BY COUNT(j) DESC")
+    List<Object[]> findTopSubcategories(Pageable pageable);
 }

@@ -97,6 +97,16 @@ public class Job {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "flagged", nullable = false)
+    @Builder.Default
+    private boolean flagged = false;
+
+    @Column(name = "flag_reason", columnDefinition = "TEXT")
+    private String flagReason;
+
+    @Column(name = "archived_at")
+    private LocalDateTime archivedAt;
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 

@@ -72,4 +72,6 @@ public interface JobService {
     JobResponse startJob(UUID jobId, String userEmail);
 
     JobResponse rejectJob(UUID jobId, String userEmail, RejectJobRequest request);
+
+    void reportJob(UUID jobId, String userEmail, String reason);
 }

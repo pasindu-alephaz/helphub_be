@@ -1,4 +1,4 @@
-package lk.helphub.api.application.dto;
+package lk.helphub.api.admin.application.dto;
 
 import lk.helphub.api.domain.enums.VerificationStatus;
 import lombok.*;

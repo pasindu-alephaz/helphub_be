@@ -20,6 +20,7 @@ import lk.helphub.api.application.dto.DisputeJobRequest;
 import lk.helphub.api.application.dto.CancelJobRequest;
 import lk.helphub.api.application.dto.RejectJobRequest;
 import lk.helphub.api.application.dto.ImageResponse;
+import lk.helphub.api.admin.application.dto.FlagJobRequest;
 import lk.helphub.api.application.services.JobService;
 import lk.helphub.api.domain.enums.ResponseStatusCode;
 import lk.helphub.api.presentation.dto.ApiResponse;
@@ -528,6 +529,26 @@ public class JobController {
                 .statusCode(ResponseStatusCode.SUCCESS)
                 .message("Job rejected and returned to OPEN status")
                 .data(response)
+                .build());
+    }
+
+    @PostMapping("/{id}/report")
+    @Operation(summary = "Report/Flag a job", description = "Allows any authenticated user to report a job for admin review")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Job reported successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Job not found")
+    })
+    @PreAuthorize("hasAuthority('job_report')")
+    public ResponseEntity<ApiResponse<Void>> reportJob(
+            Principal principal,
+            @PathVariable UUID id,
+            @Valid @RequestBody FlagJobRequest request
+    ) {
+        jobService.reportJob(id, principal.getName(), request.getReason());
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Job reported successfully")
                 .build());
     }
 }

@@ -24,6 +24,7 @@
     <include file="db/changelog/changes/008-profile-refactor.sql"/>
     <include file="db/changelog/changes/009-seed-seller-role.sql"/>
     <include file="db/changelog/changes/013-job-reviews.sql"/>
+    <include file="db/changelog/changes/014-job-moderation.sql"/>
 
 
 </databaseChangeLog>

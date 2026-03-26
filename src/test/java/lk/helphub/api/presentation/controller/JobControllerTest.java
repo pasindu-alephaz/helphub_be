@@ -16,6 +16,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import lk.helphub.api.infrastructure.security.JwtUtil;
 
+import lk.helphub.api.admin.application.dto.FlagJobRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +35,9 @@ public class JobControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private JobService jobService;
@@ -120,5 +125,20 @@ public class JobControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.status").value("PENDING_CONFIRMATION"));
+    }
+
+    @Test
+    @WithMockUser
+    void testReportJob_returns200() throws Exception {
+        UUID id = UUID.randomUUID();
+        FlagJobRequest request = FlagJobRequest.builder().reason("Spam").build();
+
+        mockMvc.perform(post("/api/v1/jobs/{id}/report", id)
+                .principal(() -> "user@example.com")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(true))
+                .andExpect(jsonPath("$.message").value("Job reported successfully"));
     }
 }

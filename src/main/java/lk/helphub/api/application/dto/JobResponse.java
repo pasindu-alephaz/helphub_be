@@ -79,4 +79,13 @@ public class JobResponse {
 
     @Schema(description = "Last update timestamp")
     private LocalDateTime updatedAt;
+
+    @Schema(description = "Whether the job has been flagged/reported")
+    private boolean flagged;
+
+    @Schema(description = "Reason for flagging")
+    private String flagReason;
+
+    @Schema(description = "Archived timestamp")
+    private LocalDateTime archivedAt;
 }
