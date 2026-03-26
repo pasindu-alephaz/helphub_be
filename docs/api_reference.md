@@ -592,7 +592,19 @@ Base path: `/api/v1/admin`
 | Method | Endpoint | Summary |
 |--------|----------|---------|
 | `PATCH` | `/providers/{id}/verify` | Approve or reject a provider profile |
-| `PATCH` | `/certificates/{id}/verify` | Verify a provider certificate |
+---
+
+## 14. Admin Notifications 🔑
+
+Base path: `/api/v1/admin/notifications`
+
+| Method | Endpoint | Summary |
+|--------|----------|---------|
+| `GET` | `/` | List admin notifications (Paginated) |
+| `PUT` | `/mark-as-read/{id}` | Mark a specific notification as read |
+| `PUT` | `/mark-as-read` | Mark all notifications as read |
+| `DELETE` | `/{id}` | Soft delete a notification |
+| `GET` | `/stream` | Subscribe to real-time updates (SSE) |
 
 ---
 
