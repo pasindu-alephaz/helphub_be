@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -60,6 +61,25 @@ public class ImageUploadService {
 
     @Transactional
     public String uploadImage(User user, MultipartFile file, String imageType, String subDir) throws IOException {
+        String imageUrl = uploadGenericImage(file, imageType, subDir);
+        Image imageRecord = imageRepository.findByUrl(imageUrl)
+                .orElseThrow(() -> new IllegalStateException("Uploaded image not found in repository"));
+
+        if (user != null) {
+            imageRecord.setUser(user);
+            imageRepository.save(imageRecord);
+            // Specifically for profile pictures as per existing logic
+            if ("profile".equals(imageType)) {
+                user.setProfilePicture(imageRecord);
+                userRepository.save(user);
+            }
+        }
+
+        return imageUrl;
+    }
+
+    @Transactional
+    public String uploadGenericImage(MultipartFile file, String imageType, String subDir) throws IOException {
         validateFile(file);
 
         // Ensure upload directory exists
@@ -83,7 +103,6 @@ public class ImageUploadService {
 
         // Persist image metadata
         Image imageRecord = Image.builder()
-                .user(user)
                 .url(imageUrl)
                 .imageType(imageType)
                 .fileSize(outputFile.length())
@@ -92,11 +111,7 @@ public class ImageUploadService {
                 .build();
         imageRepository.save(imageRecord);
 
-        // Update user's profile image
-        user.setProfilePicture(imageRecord);
-        userRepository.save(user);
-
-        log.info("Profile picture uploaded for user {}: {}", user.getId(), imageUrl);
+        log.info("Generic image uploaded: {}", imageUrl);
         return imageUrl;
     }
 

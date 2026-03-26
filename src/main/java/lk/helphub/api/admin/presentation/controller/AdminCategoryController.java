@@ -10,8 +10,10 @@ import lk.helphub.api.domain.enums.ResponseStatusCode;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lk.helphub.api.presentation.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,14 +43,17 @@ public class AdminCategoryController {
                 .build());
     }
 
-    @PostMapping("/categories")
-    @Operation(summary = "Create top-level category", description = "Creates a new top-level service category")
+    @PostMapping(value = "/categories", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Create top-level category", description = "Creates a new top-level service category with an optional icon")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Category created successfully"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(@Valid @RequestBody CategoryCreateRequest request) {
-        CategoryResponse response = categoryService.createCategory(request);
+    public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(
+            @Valid @RequestPart("category") CategoryCreateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        CategoryResponse response = categoryService.createCategory(request, image);
         return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
@@ -73,17 +78,18 @@ public class AdminCategoryController {
                 .build());
     }
 
-    @PutMapping("/categories/{id}")
-    @Operation(summary = "Update category", description = "Updates an existing top-level service category")
+    @PutMapping(value = "/categories/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update category", description = "Updates an existing top-level service category with an optional icon")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Category updated successfully"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Category not found")
     })
     public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(
             @PathVariable UUID id,
-            @Valid @RequestBody CategoryUpdateRequest request
+            @Valid @RequestPart("category") CategoryUpdateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
     ) {
-        CategoryResponse response = categoryService.updateCategory(id, request);
+        CategoryResponse response = categoryService.updateCategory(id, request, image);
         return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
@@ -107,20 +113,33 @@ public class AdminCategoryController {
                 .build());
     }
 
+    @GetMapping("/subcategories")
+    @Operation(summary = "List all subcategories (Admin)", description = "Retrieves all service subcategories for management")
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllSubcategories() {
+        List<CategoryResponse> subcategories = categoryService.getAllSubcategories();
+        return ResponseEntity.ok(ApiResponse.<List<CategoryResponse>>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Subcategories retrieved successfully")
+                .data(subcategories)
+                .build());
+    }
+
     // --- Subcategory Management ---
 
-    @PostMapping("/categories/{categoryId}/subcategories")
-    @Operation(summary = "Create subcategory", description = "Creates a new subcategory under the specified category")
+    @PostMapping(value = "/categories/{categoryId}/subcategories", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Create subcategory", description = "Creates a new subcategory under the specified category with an optional icon")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Subcategory created successfully"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Parent category not found")
     })
     public ResponseEntity<ApiResponse<CategoryResponse>> createSubcategory(
             @PathVariable UUID categoryId,
-            @Valid @RequestBody SubcategoryCreateRequest request
+            @Valid @RequestPart("subcategory") SubcategoryCreateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
     ) {
         request.setParentId(categoryId);
-        CategoryResponse response = categoryService.createSubcategory(request);
+        CategoryResponse response = categoryService.createSubcategory(request, image);
         return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)
@@ -148,8 +167,8 @@ public class AdminCategoryController {
                 .build());
     }
 
-    @PutMapping("/categories/{categoryId}/subcategories/{subCategoryId}")
-    @Operation(summary = "Update subcategory", description = "Updates an existing subcategory")
+    @PutMapping(value = "/categories/{categoryId}/subcategories/{subCategoryId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update subcategory", description = "Updates an existing subcategory with an optional icon")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Subcategory updated successfully"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Subcategory not found")
@@ -157,10 +176,11 @@ public class AdminCategoryController {
     public ResponseEntity<ApiResponse<CategoryResponse>> updateSubcategory(
             @PathVariable UUID categoryId,
             @PathVariable UUID subCategoryId,
-            @Valid @RequestBody SubcategoryUpdateRequest request
+            @Valid @RequestPart("subcategory") SubcategoryUpdateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
     ) {
         request.setParentId(categoryId);
-        CategoryResponse response = categoryService.updateSubcategory(categoryId, subCategoryId, request);
+        CategoryResponse response = categoryService.updateSubcategory(categoryId, subCategoryId, request, image);
         return ResponseEntity.ok(ApiResponse.<CategoryResponse>builder()
                 .status(true)
                 .statusCode(ResponseStatusCode.SUCCESS)

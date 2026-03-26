@@ -8,6 +8,7 @@ import java.util.UUID;
 public interface ServiceCategoryRepository {
     Optional<ServiceCategory> findById(UUID id);
     List<ServiceCategory> findAllByParentIsNullAndDeletedAtIsNull();
+    List<ServiceCategory> findAllByParentIsNotNullAndDeletedAtIsNull();
     List<ServiceCategory> findAllByDeletedAtIsNull();
     ServiceCategory save(ServiceCategory category);
     void deleteById(UUID id);
