@@ -3,6 +3,7 @@ import lk.helphub.api.application.services.MailService;
 import lk.helphub.api.application.services.RefreshTokenService;
 import lk.helphub.api.application.dto.AuthResponse;
 import lk.helphub.api.application.dto.LoginRequest;
+import lk.helphub.api.application.dto.RefreshTokenRequest;
 import lk.helphub.api.application.dto.VerifyOtpRequest;
 import lk.helphub.api.domain.entity.LoginOtp;
 import lk.helphub.api.domain.entity.RefreshToken;
@@ -120,6 +121,30 @@ public class AdminAuthService {
         String accessToken = jwtUtil.generateToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
         return AuthResponse.builder().accessToken(accessToken).refreshToken(refreshToken.getToken()).build();
+    }
+
+    @Transactional
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
+        RefreshToken refreshToken = refreshTokenService.validateRefreshToken(request.getRefreshToken());
+        User user = refreshToken.getUser();
+
+        // Security check: ensure the user associated with the token is an admin
+        if (!hasAdminAccess(user)) {
+            throw new AccessDeniedException("Access denied. This endpoint is for administrators only.");
+        }
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        String newAccessToken = jwtUtil.generateToken(userDetails);
+
+        return AuthResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(refreshToken.getToken()) // keep the same refresh token
+                .build();
+    }
+
+    @Transactional
+    public void logout(RefreshTokenRequest request) {
+        refreshTokenService.revokeToken(request.getRefreshToken());
     }
 
     /**
