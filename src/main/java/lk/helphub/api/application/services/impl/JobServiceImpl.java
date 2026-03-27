@@ -74,7 +74,8 @@ public class JobServiceImpl implements JobService {
     @Override
     public JobResponse createJob(String userEmail, JobCreateRequest request) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
 
         ServiceCategory subcategory = null;
         if (request.getSubcategoryId() != null) {
@@ -84,8 +85,6 @@ public class JobServiceImpl implements JobService {
         }
 
         Point pt = parseLocation(request.getLocationCoordinates());
-        BigDecimal lat = pt != null ? BigDecimal.valueOf(pt.getY()) : null;
-        BigDecimal lon = pt != null ? BigDecimal.valueOf(pt.getX()) : null;
 
         Job job = Job.builder()
                 .title(request.getTitle())
@@ -114,7 +113,11 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
 
-        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (!job.getPostedBy().getId().equals(user.getId())) {
             throw new RuntimeException("User is not authorized to upload images for this job");
         }
 
@@ -199,7 +202,11 @@ public class JobServiceImpl implements JobService {
             throw new ResourceNotFoundException("Job not found with id: " + jobId);
         }
 
-        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (!job.getPostedBy().getId().equals(user.getId())) {
             throw new RuntimeException("User is not authorized to delete images for this job");
         }
 
@@ -220,7 +227,8 @@ public class JobServiceImpl implements JobService {
     @Override
     public JobTemplateResponse createJobTemplate(String userEmail, JobTemplateCreateRequest request) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
 
         ServiceCategory subcategory = null;
         if (request.getSubcategoryId() != null) {
@@ -230,9 +238,6 @@ public class JobServiceImpl implements JobService {
         }
 
         Point pt = parseLocation(request.getLocationCoordinates());
-        BigDecimal lat = pt != null ? BigDecimal.valueOf(pt.getY()) : null;
-        BigDecimal lon = pt != null ? BigDecimal.valueOf(pt.getX()) : null;
-
         JobTemplate template = JobTemplate.builder()
                 .templateName(request.getTemplateName())
                 .title(request.getTitle())
@@ -355,8 +360,12 @@ public class JobServiceImpl implements JobService {
             throw new ResourceNotFoundException("Job not found with id: " + jobId);
         }
 
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
         // Verify the user is the job poster
-        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+        if (!job.getPostedBy().getId().equals(user.getId())) {
             throw new RuntimeException("User is not authorized to update this job");
         }
 
@@ -408,8 +417,12 @@ public class JobServiceImpl implements JobService {
             throw new RuntimeException("Job is already deleted");
         }
 
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
         // Verify the user is the job poster
-        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+        if (!job.getPostedBy().getId().equals(user.getId())) {
             throw new RuntimeException("User is not authorized to delete this job");
         }
 
@@ -424,13 +437,14 @@ public class JobServiceImpl implements JobService {
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
 
         if (!"OPEN".equals(job.getStatus())) {
             throw new RuntimeException("Job is not open for acceptance");
         }
 
-        if (job.getPostedBy().getEmail().equals(userEmail)) {
+        if (job.getPostedBy().getId().equals(user.getId())) {
             throw new RuntimeException("Poster cannot accept their own job");
         }
 
@@ -445,7 +459,11 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
 
-        if (job.getAcceptedBy() == null || !job.getAcceptedBy().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (job.getAcceptedBy() == null || !job.getAcceptedBy().getId().equals(user.getId())) {
             throw new RuntimeException("Only the accepted provider can mark the job as complete");
         }
 
@@ -464,7 +482,11 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
 
-        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (!job.getPostedBy().getId().equals(user.getId())) {
             throw new RuntimeException("Only the job poster can confirm job completion");
         }
 
@@ -482,8 +504,12 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
 
-        boolean isPoster = job.getPostedBy().getEmail().equals(userEmail);
-        boolean isProvider = job.getAcceptedBy() != null && job.getAcceptedBy().getEmail().equals(userEmail);
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        boolean isPoster = job.getPostedBy().getId().equals(user.getId());
+        boolean isProvider = job.getAcceptedBy() != null && job.getAcceptedBy().getId().equals(user.getId());
 
         if (!isPoster && !isProvider) {
             throw new RuntimeException("Only the poster or accepted provider can initiate a dispute");
@@ -500,7 +526,11 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
 
-        if (!job.getPostedBy().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (!job.getPostedBy().getId().equals(user.getId())) {
             // If the provider wants to cancel, it should likely be 'rejectJob'.
             throw new RuntimeException("Only the job poster can cancel the job posting");
         }
@@ -519,7 +549,11 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
 
-        if (job.getAcceptedBy() == null || !job.getAcceptedBy().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (job.getAcceptedBy() == null || !job.getAcceptedBy().getId().equals(user.getId())) {
             throw new RuntimeException("Only the accepted provider can start the job");
         }
 
@@ -536,7 +570,11 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + jobId));
 
-        if (job.getAcceptedBy() == null || !job.getAcceptedBy().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (job.getAcceptedBy() == null || !job.getAcceptedBy().getId().equals(user.getId())) {
             throw new RuntimeException("Only the accepted provider can reject/abandon the job");
         }
 
@@ -574,7 +612,11 @@ public class JobServiceImpl implements JobService {
         JobTemplate template = jobTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
 
-        if (!template.getUser().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (!template.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("User is not authorized to access this template");
         }
 
@@ -586,7 +628,11 @@ public class JobServiceImpl implements JobService {
         JobTemplate template = jobTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
 
-        if (!template.getUser().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (!template.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("User is not authorized to update this template");
         }
 
@@ -623,7 +669,11 @@ public class JobServiceImpl implements JobService {
         JobTemplate template = jobTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
 
-        if (!template.getUser().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (!template.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("User is not authorized to delete this template");
         }
 
@@ -635,7 +685,11 @@ public class JobServiceImpl implements JobService {
         JobTemplate template = jobTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Template not found with id: " + templateId));
 
-        if (!template.getUser().getEmail().equals(userEmail)) {
+        User user = userRepository.findByEmail(userEmail)
+                .or(() -> userRepository.findByPhoneNumber(userEmail))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with identifier: " + userEmail));
+
+        if (!template.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("User is not authorized to use this template");
         }
 
@@ -692,6 +746,8 @@ public class JobServiceImpl implements JobService {
                 .preferredLanguage(job.getPreferredLanguage())
                 .urgencyFlag(job.getUrgencyFlag())
                 .status(job.getStatus())
+                .currentSessionId(job.getCurrentSession() != null ? job.getCurrentSession().getId() : null)
+                .totalWorkMinutes(job.getTotalWorkMinutes())
                 .postedBy(job.getPostedBy() != null ? job.getPostedBy().getId() : null)
                 .acceptedBy(job.getAcceptedBy() != null ? job.getAcceptedBy().getId() : null)
                 .imageUrls(imageUrls)

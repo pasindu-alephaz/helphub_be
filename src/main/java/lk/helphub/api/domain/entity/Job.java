@@ -85,6 +85,14 @@ public class Job {
     )
     private Set<Image> images = new HashSet<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "current_session_id")
+    private JobTimeSession currentSession;
+
+    @Builder.Default
+    @Column(name = "total_work_minutes", nullable = false)
+    private Integer totalWorkMinutes = 0;
+
     @Builder.Default
     @Column(length = 20, nullable = false)
     private String status = "OPEN";

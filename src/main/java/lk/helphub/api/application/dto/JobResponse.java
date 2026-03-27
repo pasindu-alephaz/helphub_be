@@ -62,6 +62,12 @@ public class JobResponse {
     @Schema(description = "Current status of the job", example = "OPEN")
     private String status;
 
+    @Schema(description = "Current active session ID")
+    private UUID currentSessionId;
+
+    @Schema(description = "Total work duration in minutes")
+    private Integer totalWorkMinutes;
+
     @Schema(description = "User ID who posted the job")
     private UUID postedBy;
 

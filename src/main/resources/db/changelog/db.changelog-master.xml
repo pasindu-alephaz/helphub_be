@@ -25,6 +25,7 @@
     <include file="db/changelog/changes/009-seed-seller-role.sql"/>
     <include file="db/changelog/changes/013-job-reviews.sql"/>
     <include file="db/changelog/changes/014-job-moderation.sql"/>
+    <include file="db/changelog/changes/015-job-time-tracking.sql"/>
 
 
 </databaseChangeLog>
