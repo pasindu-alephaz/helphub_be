@@ -27,9 +27,11 @@ public class RoleServiceImpl implements RoleService {
             throw new RuntimeException("Role already exists with name: " + dto.getName());
         }
 
+        Set<Permission> permissions = resolvePermissions(dto.getPermissions());
+
         Role role = Role.builder()
                 .name(dto.getName())
-                .permissions(new HashSet<>())
+                .permissions(permissions)
                 .build();
 
         return roleRepository.save(role);
@@ -60,6 +62,7 @@ public class RoleServiceImpl implements RoleService {
         });
 
         role.setName(dto.getName());
+        role.setPermissions(resolvePermissions(dto.getPermissions()));
         return roleRepository.save(role);
     }
 
@@ -70,19 +73,16 @@ public class RoleServiceImpl implements RoleService {
         roleRepository.delete(role);
     }
 
-    @Override
-    public Role assignPermissionsToRole(Integer roleId, Set<Integer> permissionIds) {
-        Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
-
-        Set<Permission> permissions = new HashSet<>();
-        for (Integer permissionId : permissionIds) {
-            Permission permission = permissionRepository.findById(permissionId)
-                    .orElseThrow(() -> new RuntimeException("Permission not found with id: " + permissionId));
-            permissions.add(permission);
+    private Set<Permission> resolvePermissions(Set<Permission> permissionSet) {
+        if (permissionSet == null || permissionSet.isEmpty()) {
+            return new HashSet<>();
         }
-
-        role.setPermissions(permissions);
-        return roleRepository.save(role);
+        Set<Permission> permissions = new HashSet<>();
+        for (Permission permission : permissionSet) {
+            Permission existing = permissionRepository.findById(permission.getId())
+                    .orElseThrow(() -> new RuntimeException("Permission not found with id: " + permission.getId()));
+            permissions.add(existing);
+        }
+        return permissions;
     }
 }

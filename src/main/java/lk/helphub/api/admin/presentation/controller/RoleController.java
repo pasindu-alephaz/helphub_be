@@ -19,7 +19,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/admin/roles")
@@ -118,29 +117,5 @@ public class RoleController {
             @PathVariable Integer id) {
         roleService.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/{id}/permissions")
-    @Operation(summary = "Assign permissions to a role", description = "Replaces the permissions assigned to an existing role")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Permissions assigned successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role or permission not found",
-                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
-                    examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"NOT_FOUND\",\n  \"message\": \"Role or permission not found\"\n}"))),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body",
-                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
-                    examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"VALIDATION_ERROR\",\n  \"message\": \"Invalid request body\"\n}")))
-    })
-    @PreAuthorize("hasAuthority('role_assign_permissions')")
-    public ResponseEntity<ApiResponse<Role>> assignPermissions(
-            @Parameter(description = "ID of the role to update")
-            @PathVariable Integer id,
-            @Valid @RequestBody Set<Integer> permissionIds) {
-        return ResponseEntity.ok(ApiResponse.<Role>builder()
-                .status(true)
-                .statusCode(ResponseStatusCode.SUCCESS)
-                .message("Permissions assigned gracefully")
-                .data(roleService.assignPermissionsToRole(id, permissionIds))
-                .build());
     }
 }
