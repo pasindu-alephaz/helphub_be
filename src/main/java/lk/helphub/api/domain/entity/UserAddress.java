@@ -31,6 +31,9 @@ public class UserAddress {
     @Column(length = 100)
     private String province;
 
+    @Column(name = "street_address", columnDefinition = "TEXT")
+    private String streetAddress;
+
     @Column(length = 100)
     private String district;
 

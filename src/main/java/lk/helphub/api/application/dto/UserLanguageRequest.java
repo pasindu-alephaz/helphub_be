@@ -12,7 +12,7 @@ public class UserLanguageRequest {
 
     @NotBlank(message = "Language name is required")
     @Schema(description = "Language name (use 'Other' for custom), supports Sinhala/Tamil/English Unicode",
-            example = "සිංහල", requiredMode = Schema.RequiredMode.REQUIRED)
+            example = "Sinhala", requiredMode = Schema.RequiredMode.REQUIRED)
     private String languageName;
 
     @NotNull(message = "Proficiency level is required")

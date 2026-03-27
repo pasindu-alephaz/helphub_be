@@ -86,7 +86,7 @@ public class AdminAuthService {
             return AuthResponse.builder().twoFactorRequired(true).build();
         }
 
-        // 2FA not enabled — return tokens immediately
+        // 2FA not enabled - return tokens immediately
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String accessToken = jwtUtil.generateToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);

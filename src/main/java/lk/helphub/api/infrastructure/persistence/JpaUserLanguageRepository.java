@@ -11,8 +11,4 @@ import java.util.UUID;
 
 @Repository
 public interface JpaUserLanguageRepository extends JpaRepository<UserLanguage, UUID>, UserLanguageRepository {
-
-    List<UserLanguage> findByUserId(UUID userId);
-
-    Optional<UserLanguage> findByIdAndUserId(UUID id, UUID userId);
 }

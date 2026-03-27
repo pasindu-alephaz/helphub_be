@@ -11,8 +11,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
+import org.springframework.data.repository.NoRepositoryBean;
+
+@NoRepositoryBean
+public interface UserRepository {
     
     Optional<User> findById(UUID id);
     
@@ -69,4 +71,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     
     // Count users by user type (non-deleted)
     long countByUserTypeAndDeletedAtIsNull(String userType);
+
+    <S extends User> S save(S entity);
+    long count();
 }

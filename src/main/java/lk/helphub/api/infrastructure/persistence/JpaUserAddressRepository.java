@@ -12,9 +12,4 @@ import java.util.UUID;
 @Repository
 public interface JpaUserAddressRepository extends JpaRepository<UserAddress, UUID>, UserAddressRepository {
 
-    List<UserAddress> findByUserId(UUID userId);
-
-    Optional<UserAddress> findByIdAndUserId(UUID id, UUID userId);
-
-    Optional<UserAddress> findByUserIdAndIsDefaultTrue(UUID userId);
 }

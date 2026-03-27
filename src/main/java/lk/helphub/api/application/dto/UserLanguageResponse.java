@@ -16,7 +16,7 @@ public class UserLanguageResponse {
     @Schema(description = "BCP-47 language code", example = "si")
     private String languageCode;
 
-    @Schema(description = "Language name (may be Sinhala, Tamil, English, or custom)", example = "සිංහල")
+    @Schema(description = "Language name (may be Sinhala, Tamil, English, or custom)", example = "Sinhala")
     private String languageName;
 
     @Schema(description = "Proficiency level", example = "NATIVE")

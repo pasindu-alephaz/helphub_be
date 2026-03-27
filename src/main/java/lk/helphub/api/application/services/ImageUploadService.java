@@ -188,4 +188,14 @@ public class ImageUploadService {
             writer.dispose();
         }
     }
+
+    @Transactional
+    public java.util.List<String> uploadImages(String email, java.util.List<MultipartFile> files, String imageType, String subDir) throws IOException {
+        User user = findUser(email);
+        java.util.List<String> urls = new java.util.ArrayList<>();
+        for (MultipartFile file : files) {
+            urls.add(uploadImage(user, file, imageType, subDir));
+        }
+        return urls;
+    }
 }

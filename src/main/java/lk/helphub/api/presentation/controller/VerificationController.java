@@ -32,7 +32,7 @@ public class VerificationController {
     @Operation(summary = "Send verification OTP", description = "Sends a verification OTP to the provided email and/or phone number. Returns token(s) to use when verifying.")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Verification OTP sent successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request — at least one of email or phone number is required",
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request - at least one of email or phone number is required",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class),
                 examples = @ExampleObject(value = "{\n  \"status\": false,\n  \"status_code\": \"VALIDATION_ERROR\",\n  \"message\": \"Validation failed or invalid input\"\n}")))
     })

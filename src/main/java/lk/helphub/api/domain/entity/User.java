@@ -1,6 +1,7 @@
 package lk.helphub.api.domain.entity;
 
 import jakarta.persistence.*;
+import lk.helphub.api.domain.enums.Gender;
 import lk.helphub.api.domain.enums.IdentityType;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -58,6 +59,10 @@ public class User {
     @Builder.Default
     @Column(name = "language_preference", length = 20)
     private String languagePreference = "SINHALA";
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private Gender gender;
 
     @Column(name = "delete_reason", columnDefinition = "TEXT")
     private String deleteReason;

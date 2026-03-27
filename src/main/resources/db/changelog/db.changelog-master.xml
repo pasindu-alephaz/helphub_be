@@ -25,4 +25,7 @@
     <include file="db/changelog/changes/009-seed-seller-role.sql"/>
 
     <include file="db/changelog/changes/013-fix-job-templates-column.sql"/>
+    <include file="db/changelog/changes/014-provider-api-additions.sql"/>
+    <include file="db/changelog/changes/015-provider-schema-completion.sql"/>
+    <include file="db/changelog/changes/016-provider-profile-bio.sql"/>
 </databaseChangeLog>

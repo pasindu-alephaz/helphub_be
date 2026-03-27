@@ -30,7 +30,7 @@ public class ImageUploadController {
 
     @PostMapping(value = "/picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Upload profile picture",
-               description = "Accepts JPEG, PNG, or WebP images up to 10MB. The server resizes images to a maximum of 800×800 pixels and compresses at 75% JPEG quality before storing. Returns the public URL of the processed image.")
+               description = "Accepts JPEG, PNG, or WebP images up to 10MB. The server resizes images to a maximum of 800x800 pixels and compresses at 75% JPEG quality before storing. Returns the public URL of the processed image.")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Profile picture uploaded successfully"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid file type or size",
@@ -48,6 +48,29 @@ public class ImageUploadController {
                 .statusCode(ResponseStatusCode.SUCCESS)
                 .message("Profile picture uploaded successfully")
                 .data(Map.of("url", imageUrl))
+                .build());
+    }
+
+    @PostMapping(value = "/bulk", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload multiple images",
+               description = "Accepts multiple JPEG, PNG, or WebP images. Returns a list of public URLs.")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Images uploaded successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid file type or size")
+    })
+    @PreAuthorize("hasAuthority('profile_update')")
+    public ResponseEntity<ApiResponse<java.util.List<String>>> uploadImages(
+            Principal principal,
+            @RequestParam("files") java.util.List<MultipartFile> files,
+            @RequestParam(value = "type", defaultValue = "general") String type,
+            @RequestParam(value = "folder", defaultValue = "general") String folder
+    ) throws IOException {
+        java.util.List<String> urls = imageUploadService.uploadImages(principal.getName(), files, type, folder);
+        return ResponseEntity.ok(ApiResponse.<java.util.List<String>>builder()
+                .status(true)
+                .statusCode(ResponseStatusCode.SUCCESS)
+                .message("Images uploaded successfully")
+                .data(urls)
                 .build());
     }
 }

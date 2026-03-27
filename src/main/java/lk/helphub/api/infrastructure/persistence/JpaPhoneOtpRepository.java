@@ -11,7 +11,4 @@ import java.util.UUID;
 
 @Repository
 public interface JpaPhoneOtpRepository extends JpaRepository<PhoneOtp, UUID>, PhoneOtpRepository {
-    Optional<PhoneOtp> findByPhoneNumberAndOtpAndUsedAtIsNull(String phoneNumber, String otp);
-    List<PhoneOtp> findByPhoneNumberAndUsedAtIsNull(String phoneNumber);
-    Optional<PhoneOtp> findByPendingTokenAndUsedAtIsNotNull(String pendingToken);
 }

@@ -19,8 +19,8 @@ import java.net.URI;
  * https://textit.biz/sendmsg/?id={username}&pw={password}&to={to}&text={url-encoded-message}
  *
  * Response format:
- * OK: {message-id} → success
- * FAIL: {error-code} → failure
+ * OK: {message-id} -> success
+ * FAIL: {error-code} -> failure
  */
 @Service
 @Slf4j

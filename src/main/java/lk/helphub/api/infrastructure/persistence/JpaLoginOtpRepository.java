@@ -12,8 +12,4 @@ import java.util.UUID;
 
 @Repository
 public interface JpaLoginOtpRepository extends JpaRepository<LoginOtp, UUID>, LoginOtpRepository {
-
-    Optional<LoginOtp> findByOtpAndUser(String otp, User user);
-
-    List<LoginOtp> findByUserAndUsedAtIsNull(User user);
 }

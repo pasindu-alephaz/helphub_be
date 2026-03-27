@@ -28,7 +28,7 @@ public class UserLanguageController {
 
     @GetMapping
     @Operation(summary = "List communication language preferences",
-               description = "Returns all saved communication language entries for the authenticated user. Supports Sinhala (සිංහල), Tamil (தமிழ்), English, and custom entries.")
+               description = "Returns all saved communication language entries for the authenticated user. Supports Sinhala, Tamil, English, and custom entries.")
     @PreAuthorize("hasAuthority('profile_read')")
     public ResponseEntity<ApiResponse<List<UserLanguageResponse>>> getLanguages(Principal principal) {
         List<UserLanguageResponse> languages = userLanguageService.getLanguages(principal.getName());
