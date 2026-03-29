@@ -1,16 +1,19 @@
 package lk.helphub.api.application.dto;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class ProviderPortfolioResponse {
+public class ProviderSkillProofResponse {
     private UUID id;
+    private UUID subcategoryId;
     private String title;
     private String description;
     private List<String> imageUrls;
+    private LocalDateTime createdAt;
 }

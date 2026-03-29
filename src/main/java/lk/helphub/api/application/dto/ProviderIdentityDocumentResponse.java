@@ -4,16 +4,16 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @Builder
-public class UserEducationResponse {
+public class ProviderIdentityDocumentResponse {
     private UUID id;
-    private String certificateName;
-    private String university;
-    private String educationalLevel;
-    private String certificateUrl;
+    private String documentType;
+    private String issuingCountry;
+    private String documentCode;
+    private List<String> imageUrls;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

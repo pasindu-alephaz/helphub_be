@@ -1,33 +1,55 @@
 package lk.helphub.api.application.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lk.helphub.api.domain.enums.Gender;
+import lombok.Builder;
+import lombok.Data;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-@Schema(description = "Response containing provider profile information")
+@Schema(description = "Comprehensive response payload representing a Provider Profile")
 public class ProviderProfileResponse {
 
-    @Schema(description = "ID of the user", example = "550e8400-e29b-41d4-a716-446655440000")
-    private UUID userId;
+    private UUID id;
+    private PersonalDetailsResponse personalDetails;
+    private AddressDetailsResponse addressDetails;
+    private String professionalBio;
+    
+    private List<ProviderIdentityDocumentResponse> identityDocuments;
+    private List<ProviderSkillResponse> skills;
+    private List<ProviderSkillProofResponse> skillProofs;
+    private List<UserEducationResponse> academicQualifications;
 
-    @Schema(description = "Business or display name", example = "John's Services")
-    private String businessName;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    @Schema(description = "Professional bio", example = "Experienced plumber.")
-    private String bio;
+    @Data
+    @Builder
+    public static class PersonalDetailsResponse {
+        private String fullName;
+        private String displayName;
+        private String email;
+        private String phone;
+        private LocalDate dob;
+        private Gender gender;
+        private String profilePictureUrl;
+    }
 
-    @Schema(description = "Identity verification documents")
-    private List<ProviderIdentityResponse> identityDocuments;
-
-    @Schema(description = "Services offered by the provider")
-    private List<ProviderServiceResponse> services;
-
-    @Schema(description = "Portfolio items")
-    private List<ProviderPortfolioResponse> portfolio;
+    @Data
+    @Builder
+    public static class AddressDetailsResponse {
+        private String streetAddress;
+        private String city;
+        private String province;
+        private String zipCode;
+        private String country;
+        private BigDecimal latitude;
+        private BigDecimal longitude;
+    }
 }

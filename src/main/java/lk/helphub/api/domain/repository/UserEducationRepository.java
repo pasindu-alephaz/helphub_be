@@ -16,4 +16,6 @@ public interface UserEducationRepository {
     void delete(UserEducation entity);
     <S extends UserEducation> S save(S entity);
     <S extends UserEducation> Iterable<S> saveAll(Iterable<S> entities);
+    java.util.Optional<UserEducation> findById(UUID id);
+    java.util.List<UserEducation> findByUserId(UUID userId);
 }

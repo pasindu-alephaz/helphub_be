@@ -9,12 +9,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "provider_services")
-@Data
+@Table(name = "provider_skills")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProviderService {
+public class ProviderSkill {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -25,28 +26,11 @@ public class ProviderService {
     private ProviderProfile providerProfile;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private ServiceCategory category;
+    @JoinColumn(name = "subcategory_id", nullable = false)
+    private ServiceCategory subcategory; // Mapping to subcategories
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subcategory_id")
-    private ServiceCategory subcategory;
-
-    @Column(name = "skill_level", length = 20, nullable = false)
-    private String skillLevel = "BEGINNER"; // BEGINNER, INTERMEDIATE, EXPERT
-
-    @Column(name = "relationship", length = 100)
-    private String relationship;
-
-    @Builder.Default
-    @Column(name = "is_available")
-    private boolean isAvailable = true;
-
-    @Column(name = "start_date_time")
-    private LocalDateTime startDateTime;
-
-    @Column(name = "end_date_time")
-    private LocalDateTime endDateTime;
+    @Column(name = "skill_level", length = 50)
+    private String skillLevel; // NOVICE, ADVANCED_BEGINNER, COMPETENT, PROFICIENT, EXPERT
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

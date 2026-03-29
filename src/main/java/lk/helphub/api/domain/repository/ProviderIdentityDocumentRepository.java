@@ -1,13 +1,17 @@
 package lk.helphub.api.domain.repository;
 
 import lk.helphub.api.domain.entity.ProviderIdentityDocument;
-import lk.helphub.api.domain.entity.ProviderProfile;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-public interface ProviderIdentityDocumentRepository extends JpaRepository<ProviderIdentityDocument, UUID> {
-    List<ProviderIdentityDocument> findByProviderProfile(ProviderProfile providerProfile);
-    void deleteByProviderProfile(ProviderProfile providerProfile);
+@NoRepositoryBean
+public interface ProviderIdentityDocumentRepository {
+    ProviderIdentityDocument save(ProviderIdentityDocument document);
+    Optional<ProviderIdentityDocument> findById(UUID id);
+    List<ProviderIdentityDocument> findByProviderProfileId(UUID providerProfileId);
+    void deleteById(UUID id);
+    void delete(ProviderIdentityDocument document);
 }

@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @Table(name = "user_addresses")
@@ -51,6 +52,9 @@ public class UserAddress {
 
     @Column(precision = 11, scale = 8)
     private BigDecimal longitude;
+
+    @Column(columnDefinition = "geometry(Point, 4326)")
+    private Point location;
 
     @Builder.Default
     @Column(name = "is_default", nullable = false)

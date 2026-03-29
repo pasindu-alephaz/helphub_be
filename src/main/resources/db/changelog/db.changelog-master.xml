@@ -28,4 +28,8 @@
     <include file="db/changelog/changes/014-provider-api-additions.sql"/>
     <include file="db/changelog/changes/015-provider-schema-completion.sql"/>
     <include file="db/changelog/changes/016-provider-profile-bio.sql"/>
+    <include file="db/changelog/changes/017-provider-onboarding-schema.sql"/>
+    <include file="db/changelog/changes/018-drop-legacy-provider-tables.sql"/>
+    <include file="db/changelog/changes/019-provider-new-schema.sql"/>
+    <include file="db/changelog/changes/020-fix-provider-inheritance-stale-tables.sql"/>
 </databaseChangeLog>

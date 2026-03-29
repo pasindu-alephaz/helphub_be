@@ -8,12 +8,10 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class UserEducationResponse {
+public class ProviderSkillResponse {
     private UUID id;
-    private String certificateName;
-    private String university;
-    private String educationalLevel;
-    private String certificateUrl;
+    private UUID subcategoryId;
+    private java.util.Map<String, String> subcategoryName;
+    private String skillLevel;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

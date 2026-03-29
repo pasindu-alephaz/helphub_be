@@ -1,7 +1,7 @@
 -- liquibase formatted sql
 
 -- changeset antigravity:32
--- validCheckSum: 9:73da06b091bda6aa75c0082e3ce5860f
+-- validCheckSum: 9:287d621ad969e26bf8d556654ef8deab
 CREATE TABLE IF NOT EXISTS "jobs" (
 	"id" UUID DEFAULT gen_random_uuid(),
 	"title" VARCHAR(100) NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS "jobs" (
 
 
 -- changeset antigravity:33
--- validCheckSum: 9:a812906e36cb13f498d03ac338e16b5f
+-- validCheckSum: 9:41b2c82ca36321a1aa02b65b5f9ce9d9
 CREATE TABLE IF NOT EXISTS "job_templates" (
     "id" UUID DEFAULT gen_random_uuid(),
     "template_name" VARCHAR(100) NOT NULL,

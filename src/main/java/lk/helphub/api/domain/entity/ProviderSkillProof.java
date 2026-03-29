@@ -11,12 +11,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "provider_portfolio_items")
-@Data
+@Table(name = "provider_skill_proofs")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProviderPortfolioItem {
+public class ProviderSkillProof {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -26,11 +27,19 @@ public class ProviderPortfolioItem {
     @JoinColumn(name = "provider_profile_id", nullable = false)
     private ProviderProfile providerProfile;
 
-    @Column(name = "title", length = 200)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategory_id")
+    private ServiceCategory subcategory; // Optional link directly to the subcategory for the proof
+
+    @Column(length = 255)
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "skillProof", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProviderSkillProofImage> images = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -39,8 +48,4 @@ public class ProviderPortfolioItem {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "portfolioItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProviderPortfolioImage> images = new ArrayList<>();
 }

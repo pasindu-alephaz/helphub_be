@@ -12,7 +12,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "provider_identity_documents")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -26,21 +27,18 @@ public class ProviderIdentityDocument {
     @JoinColumn(name = "provider_profile_id", nullable = false)
     private ProviderProfile providerProfile;
 
-    @Column(name = "id_type", length = 20, nullable = false)
-    private String idType; // NIC, PASSPORT, LICENSE
-
-    @Column(name = "id_number", length = 100, nullable = false)
-    private String idNumber;
+    @Column(name = "document_type", length = 50, nullable = false)
+    private String documentType; // e.g., NIC, PASSPORT, DRIVING_LICENSE
 
     @Column(name = "issuing_country", length = 100)
     private String issuingCountry;
 
-    @Column(name = "issuing_country_code", length = 10)
-    private String issuingCountryCode;
+    @Column(name = "document_code", length = 100)
+    private String documentCode;
 
     @Builder.Default
-    @Column(length = 20, nullable = false)
-    private String status = "PENDING";
+    @OneToMany(mappedBy = "identityDocument", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProviderIdentityImage> images = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -49,8 +47,4 @@ public class ProviderIdentityDocument {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProviderIdentityImage> images = new ArrayList<>();
 }
